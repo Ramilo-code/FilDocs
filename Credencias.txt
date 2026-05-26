@@ -1,0 +1,14 @@
+1. Email / Utilizador: director@sfsermao.ao
+         Palavrapasse: Director@2025
+
+
+2. Email / Utilizador: prof.amaro@sfsermao.ao
+         Palavrapasse: Prof@2025
+
+
+3. Email / Utilizador: secretario@sfsermao.ao
+         Palavrapasse: Secretario@2025
+
+
+4. Email / Utilizador: admin@sfsermao.ao
+         Palavrapasse: Admin@2025

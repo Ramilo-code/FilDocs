@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FilDocs | Iniciar Sessão</title>
+  <link rel="stylesheet" href="css/estilo.css"> <link rel="icon" type="image/png" sizes="512x512" href="css/img/favicon/android-chrome-512x512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="css/img/favicon/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="css/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="css/img/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="css/img/favicon/favicon.ico"> 
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* ── LAYOUT ── */
+    .login-container {
+      width: 100%;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── COLUNA ESQUERDA ── */
+    .login-left {
+      flex: 0 0 46%;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
+      color: #fff;
+    }
+
+    /* grid sutil no fundo */
+    .login-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0H0v40' fill='none' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E");
+    }
+
+    /* círculos decorativos */
+    .login-left::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      bottom: -120px; right: -100px;
+      pointer-events: none;
+    }
+
+    .login-left-circle {
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      top: 60px; right: 30px;
+      pointer-events: none;
+    }
+
+    .login-left-top { position: relative; z-index: 1; }
+    .login-left-mid { position: relative; z-index: 1; }
+    .login-left-bot { position: relative; z-index: 1; font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+
+    .left-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .left-logo-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .left-logo-name {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .left-title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .left-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.72);
+      font-weight: 500;
+      line-height: 1.6;
+      min-height: 2.4em;
+    }
+
+    /* cursor de digitação */
+    .typewriter-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: rgba(255,255,255,0.8);
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blink 0.9s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* badges decorativos */
+    .left-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .left-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .left-badge svg { width: 13px; height: 13px; }
+
+    /* ── COLUNA DIREITA ── */
+    .login-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: var(--color-surface-container-lowest);
+      position: relative;
+    }
+
+    /* botão tema no canto */
+    .btn-theme {
+      position: absolute;
+      top: 1.25rem; right: 1.25rem;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-low);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      color: var(--color-on-surface-variant);
+    }
+    .btn-theme:hover { background: var(--color-surface-container); border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-theme svg { width: 18px; height: 18px; }
+
+    /* logo mobile */
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+    .mobile-logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 12px;
+      background: var(--color-primary-container);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-primary);
+    }
+    .mobile-logo-name {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--color-primary);
+    }
+
+    /* card do formulário */
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-header { margin-bottom: 2rem; }
+    .login-header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--color-on-surface);
+      margin-bottom: 0.35rem;
+    }
+    .login-header p {
+      font-size: 0.875rem;
+      color: var(--color-on-surface-variant);
+      font-weight: 500;
+    }
+
+    /* grupos de input */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--color-on-surface-variant);
+      margin-bottom: 0.45rem;
+      padding-left: 0.25rem;
+    }
+    .input-wrapper { position: relative; }
+    .input-wrapper .input-field {
+      padding: 0.875rem 1rem 0.875rem 2.75rem;
+      font-size: 0.9rem;
+    }
+    .input-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%; transform: translateY(-50%);
+      color: var(--color-outline);
+      pointer-events: none;
+      display: flex; align-items: center;
+    }
+    .input-icon svg { width: 17px; height: 17px; }
+    .btn-eye {
+      position: absolute;
+      right: 0.85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--color-outline);
+      display: flex; align-items: center;
+      padding: 0.2rem;
+      transition: color 0.2s;
+    }
+    .btn-eye:hover { color: var(--color-primary); }
+    .btn-eye svg { width: 17px; height: 17px; }
+
+    /* opções abaixo dos inputs */
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      margin-top: 0.25rem;
+    }
+    .form-check {
+      display: flex; align-items: center; gap: 0.5rem;
+      cursor: pointer; user-select: none;
+    }
+    .form-check input[type="checkbox"] { accent-color: var(--color-primary); width: 15px; height: 15px; cursor: pointer; }
+    .form-check span { font-size: 0.82rem; color: var(--color-on-surface-variant); font-weight: 500; }
+    .link-forgot {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .link-forgot:hover { opacity: 0.75; text-decoration: underline; }
+
+    /* botão principal */
+    .btn-login {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-login svg { width: 18px; height: 18px; }
+
+    /* mensagem de erro inline */
+    .error-msg {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.85rem;
+      background: var(--color-error-container);
+      color: var(--color-on-error-container);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 1.1rem;
+      animation: fadeIn 0.25s ease;
+    }
+    .error-msg.show { display: flex; }
+    .error-msg svg { width: 16px; height: 16px; flex-shrink: 0; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px);} to{opacity:1;transform:translateY(0);} }
+
+    /* rodapé */
+    .login-footer {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--color-outline-variant);
+      text-align: center;
+    }
+    .login-footer p {
+      font-size: 0.68rem;
+      color: var(--color-outline);
+      font-weight: 500;
+      line-height: 1.7;
+    }
+
+    /* ── RESPONSIVO ── */
+    @media (min-width: 1024px) {
+      .login-left { display: flex; }
+      .mobile-logo { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="login-container">
+
+  <!-- ── ESQUERDA ── -->
+  <div class="login-left">
+    <div class="login-left-circle"></div>
+
+    <div class="login-left-top">
+      <div class="left-logo">
+        <div class="left-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="left-logo-name">FilDocs</span>
+      </div>
+    </div>
+
+    <div class="login-left-mid">
+      <h2 class="left-title">Gestão Documental</h2>
+      <p class="left-subtitle">
+        <span id="typewriter-text"></span><span class="typewriter-cursor"></span>
+      </p>
+      <div class="left-badges">
+        <span class="left-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Acesso Seguro
+        </span>
+        <span class="left-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Gestão Documental
+        </span>
+        <span class="left-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Multi-utilizador
+        </span>
+      </div>
+    </div>
+
+    <div class="login-left-bot">
+      © 2026 Complexo Escolar São Filipe Sermão
+    </div>
+  </div>
+
+  <!-- ── DIREITA ── -->
+  <div class="login-right">
+
+    <!-- botão tema -->
+    <button class="btn-theme" onclick="toggleTheme()" title="Alternar tema" id="btn-theme">
+      <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <div class="login-card">
+
+      <!-- logo mobile -->
+      <div class="mobile-logo">
+        <div class="mobile-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="mobile-logo-name">FilDocs</span>
+      </div>
+
+      <div class="login-header">
+        <h1>Bem-vindo</h1>
+        <p>Insira as suas credenciais para aceder ao sistema</p>
+      </div>
+
+      <!-- erro inline -->
+      <div class="error-msg" id="error-msg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="error-text">Credenciais inválidas. Verifique e tente novamente.</span>
+      </div>
+
+      <form id="login-form" novalidate>
+        <!-- campo utilizador -->
+        <div class="form-group">
+          <label class="form-label" for="login-user">E-mail ou Utilizador</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input id="login-user" type="text" class="input-field" placeholder="utilizador@sfsermao.ao" autocomplete="username" required>
+          </div>
+        </div>
+
+        <!-- campo senha -->
+        <div class="form-group">
+          <label class="form-label" for="login-pass">Palavra-passe</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input id="login-pass" type="password" class="input-field" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="btn-eye" onclick="togglePass()" id="btn-eye" title="Mostrar/ocultar senha">
+              <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- opções -->
+        <div class="form-options">
+          <label class="form-check">
+            <input type="checkbox" id="remember-me">
+            <span>Manter-me ligado</span>
+          </label>
+          <a href="recuperarsenha.html" class="link-forgot">Esqueceu a senha?</a>
+        </div>
+
+        <!-- botão submeter -->
+        <button type="submit" class="btn-primary btn-login" id="btn-login">
+          <span id="btn-text">Aceder</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="btn-icon"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p>Acesso Institucional Seguro • Todos os acessos são monitorizados</p>
+        <p style="margin-top:0.2rem;opacity:0.6;">v1.0.0 — Complexo Escolar São Filipe Sermão</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── UTILIZADORES DEMO ──
+  const USERS = [
+    { email: 'director@sfsermao.ao', pass: 'Director@2025', role: 'director', name: 'Director Geral', initials: 'DG', page: 'director.html' },
+    { email: 'secretario@sfsermao.ao', pass: 'Secretario@2025', role: 'secretario', name: 'Secretário Geral', initials: 'SG', page: 'secretario.html' },
+    { email: 'prof.amaro@sfsermao.ao', pass: 'Prof@2025', role: 'professor', name: 'Prof. Amaro', initials: 'PA', page: 'professor.html' },
+    { email: 'admin@sfsermao.ao', pass: 'Admin@2025', role: 'admin', name: 'Administrador', initials: 'AD', page: 'admin.html' }
+    
+  ];
+
+  // ── DB LOCAL ──
+  const db = {
+    get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  };
+
+  // ── TEMA ──
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    db.set('fildocs_theme', theme);
+    const sun = document.getElementById('icon-sun');
+    const moon = document.getElementById('icon-moon');
+    if (theme === 'dark') { sun.style.display = 'block'; moon.style.display = 'none'; }
+    else { sun.style.display = 'none'; moon.style.display = 'block'; }
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  }
+
+  // ── MOSTRAR / OCULTAR SENHA ──
+  function togglePass() {
+    const inp = document.getElementById('login-pass');
+    const open = document.getElementById('eye-open');
+    const closed = document.getElementById('eye-closed');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      open.style.display = 'none';
+      closed.style.display = 'block';
+    } else {
+      inp.type = 'password';
+      open.style.display = 'block';
+      closed.style.display = 'none';
+    }
+  }
+
+  // ── ERRO INLINE ──
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    document.getElementById('error-text').textContent = msg;
+    el.classList.add('show');
+  }
+  function hideError() {
+    document.getElementById('error-msg').classList.remove('show');
+  }
+
+  // ── FORM SUBMIT ──
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    hideError();
+
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const remember = document.getElementById('remember-me').checked;
+
+    if (!user || !pass) {
+      showError('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    // loading
+    const btn = document.getElementById('btn-login');
+    const btnText = document.getElementById('btn-text');
+    const btnIcon = document.getElementById('btn-icon');
+    btn.disabled = true;
+    btnIcon.style.display = 'none';
+    btnText.innerHTML = '<span class="loading-spinner"></span> A verificar...';
+
+    setTimeout(() => {
+      const found = USERS.find(u => u.email === user && u.pass === pass);
+
+      if (found) {
+        // guardar sessão
+        db.set('fildocs_session', {
+          auth: true,
+          user: found.email,
+          name: found.name,
+          role: found.role,
+          initials: found.initials,
+          time: Date.now(),
+          remember: remember
+        });
+        btnText.innerHTML = '<span class="loading-spinner"></span> Bem-vindo!';
+        setTimeout(() => { window.location.href = found.page; }, 600);
+      } else {
+        btn.disabled = false;
+        btnIcon.style.display = 'block';
+        btnText.textContent = 'Aceder ao Painel';
+        showError('E-mail ou palavra-passe incorrectos. Tente novamente.');
+      }
+    }, 1300);
+  });
+
+  // limpa erro ao digitar
+  document.getElementById('login-user').addEventListener('input', hideError);
+  document.getElementById('login-pass').addEventListener('input', hideError);
+
+  // ── TYPEWRITER ──
+  const phrases = [
+    'Plataforma segura para toda a equipa do Complexo Escolar São Filipe Sermão.',
+    'Submeta, aprove e arquive documentos com total controlo.',
+    'Organização documental ao alcance de todos os colaboradores.',
+  ];
+  let phraseIdx = 0, charIdx = 0, deleting = false;
+  const el = document.getElementById('typewriter-text');
+
+  function typeWrite() {
+    const cur = phrases[phraseIdx];
+    if (!deleting) {
+      el.textContent = cur.substring(0, charIdx + 1);
+      charIdx++;
+      if (charIdx === cur.length) {
+        deleting = true;
+        setTimeout(typeWrite, 2400);
+        return;
+      }
+      setTimeout(typeWrite, 38);
+    } else {
+      el.textContent = cur.substring(0, charIdx - 1);
+      charIdx--;
+      if (charIdx === 0) {
+        deleting = false;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
+        setTimeout(typeWrite, 400);
+        return;
+      }
+      setTimeout(typeWrite, 18);
+    }
+  }
+
+  // ── INIT ──
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = db.get('fildocs_theme') || 'light';
+    applyTheme(savedTheme);
+
+    // redireciona se já tem sessão válida
+    const session = db.get('fildocs_session');
+    if (session && session.auth) {
+      const found = USERS.find(u => u.role === session.role);
+      if (found) window.location.href = found.page;
+    }
+
+    setTimeout(typeWrite, 800);
+  });
+</script>
+</body>
+</html>

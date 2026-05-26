@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FilDocs | Director Geral</title>
+  <link rel="stylesheet" href="css/estilo.css">
+ <link rel="icon" type="image/png" sizes="512x512" href="css/img/favicon/android-chrome-512x512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="css/img/favicon/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="css/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="css/img/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="css/img/favicon/favicon.ico">
+  <style>
+    /* ── LAYOUT BASE ── */
+    body { display: flex; min-height: 100vh; overflow-x: hidden; }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 260px; min-height: 100vh;
+      background: var(--color-surface-container-lowest);
+      border-right: 1.5px solid var(--color-outline-variant);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; z-index: 100;
+      transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+    }
+    #sidebar.collapsed { width: 70px; }
+    .sidebar-top {
+      padding: 1.25rem 1rem; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1.5px solid var(--color-outline-variant); min-height: 64px;
+    }
+    .sidebar-logo { display: flex; align-items: center; gap: 0.6rem; overflow: hidden; white-space: nowrap; transition: opacity 0.2s; }
+    .sidebar-logo-icon {
+      width: 36px; height: 36px; border-radius: 12px; background: var(--color-primary);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sidebar-logo-icon svg { width: 18px; height: 18px; stroke: #fff; }
+    .sidebar-logo-name {
+      font-size: 1.15rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .sidebar-logo-sub {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--color-outline); white-space: nowrap;
+    }
+    #sidebar.collapsed .sidebar-logo-name, #sidebar.collapsed .sidebar-logo-sub,
+    #sidebar.collapsed .nav-label, #sidebar.collapsed .nav-section-label,
+    #sidebar.collapsed .sidebar-user-info, #sidebar.collapsed .sidebar-bottom-labels { display: none; }
+    .btn-collapse {
+      width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-low); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-on-surface-variant); transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-collapse:hover { background: var(--color-primary-container); color: var(--color-primary); border-color: var(--color-primary); }
+    .btn-collapse svg { width: 15px; height: 15px; transition: transform 0.3s; }
+    #sidebar.collapsed .btn-collapse svg { transform: rotate(180deg); }
+    .sidebar-nav { flex: 1; padding: 0.75rem 0.75rem; overflow-y: auto; overflow-x: hidden; }
+    .nav-section-label {
+      font-size: 0.6rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.18em; color: var(--color-outline);
+      padding: 0.5rem 0.5rem 0.4rem; white-space: nowrap; overflow: hidden;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem;
+      border-radius: 0.85rem; cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; color: var(--color-on-surface-variant);
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+      transition: background 0.15s, color 0.15s; white-space: nowrap; overflow: hidden; position: relative;
+    }
+    .nav-item:hover { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+    .nav-item.active { background: var(--color-primary-container); color: var(--color-primary); font-weight: 700; }
+    .nav-item svg { width: 19px; height: 19px; flex-shrink: 0; stroke: currentColor; }
+    .nav-label { flex: 1; }
+    .nav-badge {
+      background: var(--color-error); color: #fff; font-size: 0.6rem; font-weight: 800;
+      padding: 1px 6px; border-radius: 999px; flex-shrink: 0;
+    }
+    #sidebar.collapsed .nav-badge { position: absolute; top: 6px; right: 6px; padding: 2px 4px; }
+    #sidebar.collapsed .nav-item { justify-content: center; padding: 0.65rem; }
+    #sidebar.collapsed .nav-item::after {
+      content: attr(data-tooltip); position: absolute; left: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+      background: var(--color-on-surface); color: var(--color-surface);
+      font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 0.5rem;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 200;
+    }
+    #sidebar.collapsed .nav-item:hover::after { opacity: 1; }
+    .sidebar-bottom { padding: 0.75rem; border-top: 1.5px solid var(--color-outline-variant); }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.5rem;
+      border-radius: 0.85rem; cursor: pointer; transition: background 0.15s; overflow: hidden;
+    }
+    .sidebar-user:hover { background: var(--color-surface-container-high); }
+    .sidebar-avatar {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--color-primary-container);
+      color: var(--color-primary); display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
+    }
+    .sidebar-user-info { overflow: hidden; }
+    .sidebar-user-name { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user-role { font-size: 0.68rem; color: var(--color-outline); font-weight: 600; white-space: nowrap; }
+    .sidebar-bottom-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+    .btn-sidebar-action {
+      flex: 1; padding: 0.5rem; border-radius: 0.75rem; border: 1.5px solid var(--color-outline-variant);
+      background: none; cursor: pointer; color: var(--color-on-surface-variant);
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      font-size: 0.72rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.2s; white-space: nowrap; overflow: hidden;
+    }
+    .btn-sidebar-action:hover { background: var(--color-surface-container); border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-sidebar-action svg { width: 15px; height: 15px; flex-shrink: 0; }
+    #sidebar.collapsed .sidebar-bottom-actions { flex-direction: column; }
+    #sidebar.collapsed .sidebar-bottom-labels { display: none; }
+    #sidebar.collapsed .sidebar-user { justify-content: center; }
+
+    /* ── MAIN ── */
+    #main-content {
+      margin-left: 260px; flex: 1; min-height: 100vh;
+      display: flex; flex-direction: column;
+      transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    #main-content.expanded { margin-left: 70px; }
+    .topbar {
+      height: 64px; background: var(--color-surface-container-lowest);
+      border-bottom: 1.5px solid var(--color-outline-variant);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left h1 { font-size: 1.1rem; font-weight: 800; }
+    .topbar-left p { font-size: 0.72rem; color: var(--color-outline); font-weight: 500; }
+    .topbar-right { display: flex; align-items: center; gap: 0.5rem; }
+    .btn-icon {
+      width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid var(--color-outline-variant);
+      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--color-on-surface-variant); transition: all 0.2s; position: relative;
+    }
+    .btn-icon:hover { background: var(--color-surface-container); border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-icon svg { width: 18px; height: 18px; }
+    .notif-dot {
+      position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-error); border: 2px solid var(--color-surface-container-lowest);
+    }
+
+    /* ── VIEWS ── */
+    .view { display: none; padding: 1.75rem; max-width: 1200px; }
+    .view.active { display: block; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--color-surface-container-lowest); border: 1.5px solid var(--color-outline-variant);
+      border-radius: 1.25rem; box-shadow: var(--shadow-card);
+    }
+    .card-hover { transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s; }
+    .card-hover:hover { box-shadow: var(--shadow-card-hover); border-color: var(--color-primary); transform: translateY(-2px); }
+
+    /* stat cards */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--color-surface-container-lowest); border: 1.5px solid var(--color-outline-variant);
+      border-radius: 1.1rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .stat-card-top { display: flex; align-items: center; justify-content: space-between; }
+    .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .stat-icon svg { width: 18px; height: 18px; }
+    .stat-value { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+    .stat-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-outline); }
+    .stat-trend { font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; gap: 0.25rem; }
+    .trend-up { color: #16a34a; }
+    .trend-down { color: var(--color-error); }
+
+    /* section header */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .section-title { font-size: 0.95rem; font-weight: 800; }
+    .section-sub { font-size: 0.72rem; color: var(--color-outline); font-weight: 500; margin-top: 0.1rem; }
+
+    /* tabela de documentos */
+    .doc-table { width: 100%; border-collapse: collapse; }
+    .doc-table thead th {
+      font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--color-outline); padding: 0.75rem 1rem; background: var(--color-surface-container-low); text-align: left;
+    }
+    .doc-table thead th:first-child { border-radius: 0.75rem 0 0 0; }
+    .doc-table thead th:last-child { border-radius: 0 0.75rem 0 0; }
+    .doc-table tbody tr { border-bottom: 1px solid var(--color-outline-variant); transition: background 0.15s; cursor: pointer; }
+    .doc-table tbody tr:last-child { border-bottom: none; }
+    .doc-table tbody tr:hover { background: var(--color-surface-container-low); }
+    .doc-table tbody td { padding: 0.85rem 1rem; font-size: 0.85rem; }
+    .doc-name { font-weight: 700; }
+    .doc-meta { font-size: 0.7rem; color: var(--color-outline); margin-top: 0.15rem; }
+
+    /* badges estado */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .badge-pending { background: #fef9c3; color: #854d0e; }
+    .badge-approved { background: #dcfce7; color: #166534; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; }
+    .badge-archived { background: var(--color-surface-container-high); color: var(--color-outline); }
+    .badge-analysis { background: #dbeafe; color: #1d4ed8; }
+    .badge-expired { background: #f3e8ff; color: #7e22ce; }
+    .badge-primary { background: var(--color-primary-container); color: var(--color-primary); }
+    .badge-secondary { background: var(--color-secondary-container); color: var(--color-secondary); }
+
+    /* acções inline */
+    .action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .btn-action {
+      padding: 0.3rem 0.7rem; border-radius: 0.5rem; border: 1.5px solid var(--color-outline-variant);
+      background: none; cursor: pointer; font-size: 0.7rem; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; gap: 0.3rem;
+      transition: all 0.15s;
+    }
+    .btn-action svg { width: 13px; height: 13px; }
+    .btn-approve { color: #16a34a; border-color: #bbf7d0; }
+    .btn-approve:hover { background: #dcfce7; border-color: #16a34a; }
+    .btn-reject { color: var(--color-error); border-color: #fecaca; }
+    .btn-reject:hover { background: #fee2e2; border-color: var(--color-error); }
+    .btn-archive { color: var(--color-outline); }
+    .btn-archive:hover { background: var(--color-surface-container); border-color: var(--color-outline); }
+    .btn-view { color: var(--color-primary); border-color: var(--color-outline-variant); }
+    .btn-view:hover { background: var(--color-primary-container); border-color: var(--color-primary); }
+
+    /* filtros */
+    .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filter-chip {
+      padding: 0.4rem 0.85rem; border-radius: 999px; border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-low); font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; color: var(--color-on-surface-variant);
+    }
+    .filter-chip:hover, .filter-chip.active {
+      border-color: var(--color-primary); background: var(--color-primary-container); color: var(--color-primary);
+    }
+
+    /* form groups */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label {
+      display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--color-on-surface-variant);
+      margin-bottom: 0.45rem; padding-left: 0.25rem;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap .input-field { padding: 0.8rem 1rem 0.8rem 2.6rem; font-size: 0.88rem; border-radius: 0.85rem; }
+    .input-wrap .input-field.no-icon { padding-left: 1rem; }
+    .input-icon-left {
+      position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+      color: var(--color-outline); pointer-events: none;
+    }
+    .input-icon-left svg { width: 16px; height: 16px; }
+    textarea.input-field { border-radius: 1rem; resize: vertical; padding: 0.8rem 1rem; font-size: 0.88rem; }
+    select.input-field { padding: 0.8rem 2.5rem 0.8rem 1rem; appearance: none; font-size: 0.88rem; border-radius: 0.85rem; cursor: pointer; }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: ''; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+      width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent;
+      border-top: 5px solid var(--color-outline); pointer-events: none;
+    }
+
+    /* upload zone */
+    .drop-zone {
+      border: 2px dashed var(--color-outline-variant); border-radius: 1.25rem;
+      padding: 2.5rem 1rem; text-align: center; cursor: pointer;
+      background: var(--color-surface-container-low); transition: all 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--color-primary); background: var(--color-primary-container);
+    }
+    .drop-zone svg { width: 40px; height: 40px; color: var(--color-primary); margin-bottom: 0.75rem; }
+    .drop-zone h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .drop-zone p { font-size: 0.78rem; color: var(--color-outline); }
+
+    /* file list */
+    .file-item {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-outline-variant);
+    }
+    .file-item:last-child { border-bottom: none; }
+    .file-icon-box {
+      width: 36px; height: 36px; border-radius: 9px; background: var(--color-surface-container);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .file-icon-box svg { width: 16px; height: 16px; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { font-size: 0.68rem; color: var(--color-outline); font-weight: 600; margin-top: 0.1rem; }
+    .btn-remove {
+      width: 28px; height: 28px; border-radius: 7px; border: none; background: none;
+      cursor: pointer; color: var(--color-error); display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .btn-remove:hover { background: var(--color-error-container); }
+    .btn-remove svg { width: 14px; height: 14px; }
+
+    /* notificações panel */
+    #notif-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 199;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    #notif-overlay.open { opacity: 1; pointer-events: all; }
+    #notif-panel {
+      position: fixed; top: 0; right: -100%; width: min(380px, 100vw); height: 100vh;
+      background: var(--color-surface-container-lowest); border-left: 1.5px solid var(--color-outline-variant);
+      z-index: 200; transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,0.1);
+    }
+    #notif-panel.open { right: 0; }
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem 1.25rem;
+      cursor: pointer; border-bottom: 1px solid var(--color-outline-variant); transition: background 0.15s;
+    }
+    .notif-item:hover { background: var(--color-surface-container-low); }
+    .notif-item.unread { background: var(--color-primary-container); }
+    .notif-item.unread:hover { background: var(--color-surface-container-low); }
+    .notif-icon-box {
+      width: 38px; height: 38px; border-radius: 10px; background: var(--color-surface-container);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .notif-icon-box svg { width: 17px; height: 17px; }
+    .notif-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .notif-body { font-size: 0.75rem; color: var(--color-on-surface-variant); line-height: 1.4; }
+    .notif-time { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-outline); margin-top: 0.3rem; }
+    .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; margin-top: 0.35rem; }
+
+    /* modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300;
+      display: none; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--color-surface-container-lowest); border-radius: 1.5rem;
+      border: 1.5px solid var(--color-outline-variant); width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.95) translateY(10px);} to{opacity:1;transform:none;} }
+    .modal-header {
+      padding: 1.25rem 1.5rem; border-bottom: 1.5px solid var(--color-outline-variant);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 1rem; font-weight: 800; }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer {
+      padding: 1rem 1.5rem; border-top: 1.5px solid var(--color-outline-variant);
+      display: flex; justify-content: flex-end; gap: 0.75rem;
+    }
+
+    /* prazo card */
+    .prazo-card {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem;
+      background: var(--color-surface-container-low); border-radius: 1rem;
+      border: 1.5px solid var(--color-outline-variant); margin-bottom: 0.75rem; transition: border-color 0.15s;
+    }
+    .prazo-card:hover { border-color: var(--color-primary); }
+    .prazo-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .prazo-open { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+    .prazo-closed { background: var(--color-outline); }
+    .prazo-info { flex: 1; }
+    .prazo-name { font-size: 0.85rem; font-weight: 700; }
+    .prazo-date { font-size: 0.7rem; color: var(--color-outline); margin-top: 0.1rem; }
+    .prazo-actions { display: flex; gap: 0.4rem; }
+
+    /* reunião card */
+    .reuniao-card {
+      padding: 1rem 1.25rem; border-radius: 1rem; border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-lowest); margin-bottom: 0.75rem;
+      border-left: 4px solid var(--color-primary);
+    }
+    .reuniao-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .reuniao-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .reuniao-meta-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--color-outline); font-weight: 600; }
+    .reuniao-meta-item svg { width: 13px; height: 13px; }
+
+    /* comunicado card */
+    .comunicado-card {
+      padding: 1rem 1.25rem; border-radius: 1rem; border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-lowest); margin-bottom: 0.75rem;
+    }
+    .comunicado-title { font-size: 0.88rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .comunicado-body { font-size: 0.8rem; color: var(--color-on-surface-variant); line-height: 1.5; margin-bottom: 0.5rem; }
+    .comunicado-footer { display: flex; align-items: center; justify-content: space-between; }
+
+    /* produtividade */
+    .prof-row {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--color-outline-variant);
+    }
+    .prof-row:last-child { border-bottom: none; }
+    .prof-avatar {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--color-secondary-container);
+      color: var(--color-secondary); display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800; flex-shrink: 0;
+    }
+    .prof-name { font-size: 0.85rem; font-weight: 700; }
+    .prof-docs { font-size: 0.7rem; color: var(--color-outline); margin-top: 0.1rem; }
+    .prof-bar-wrap { flex: 1; }
+    .prof-bar-bg { height: 6px; border-radius: 999px; background: var(--color-surface-container-high); overflow: hidden; }
+    .prof-bar-fill { height: 100%; border-radius: 999px; background: var(--color-primary); transition: width 0.8s ease; }
+    .prof-pct { font-size: 0.72rem; font-weight: 800; color: var(--color-primary); min-width: 36px; text-align: right; }
+
+    /* toast */
+    #toast-container {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000;
+      display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.25rem;
+      border-radius: 1rem; font-size: 0.8rem; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: slideInToast 0.3s ease;
+      pointer-events: all; max-width: 320px;
+    }
+    .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .toast-success { background: var(--color-primary); color: #fff; }
+    .toast-error { background: var(--color-error); color: #fff; }
+    .toast-info { background: var(--color-surface-container-highest); color: var(--color-on-surface); border: 1px solid var(--color-outline-variant); }
+    .toast.hide { animation: slideOutToast 0.3s ease forwards; }
+    @keyframes slideInToast { from{opacity:0;transform:translateX(100%);} to{opacity:1;transform:translateX(0);} }
+    @keyframes slideOutToast { from{opacity:1;} to{opacity:0;transform:translateX(100%);} }
+
+    /* grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+    @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* mobile nav */
+    #mobile-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+      background: var(--color-surface-container-lowest); border-top: 1.5px solid var(--color-outline-variant);
+      z-index: 100; align-items: center; justify-content: space-around;
+    }
+    .mobile-nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      background: none; border: none; cursor: pointer; color: var(--color-outline);
+      font-size: 0.55rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 0.5rem 0.75rem; border-radius: 0.75rem; transition: color 0.15s;
+    }
+    .mobile-nav-btn svg { width: 20px; height: 20px; }
+    .mobile-nav-btn.active { color: var(--color-primary); }
+
+    @media (max-width: 768px) {
+      #sidebar { display: none; }
+      #main-content { margin-left: 0 !important; padding-bottom: 60px; }
+      #mobile-nav { display: flex; }
+      .view { padding: 1rem; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      #toast-container { bottom: 5rem; right: 1rem; left: 1rem; }
+      .toast { max-width: 100%; }
+    }
+
+    /* botões principais */
+    .btn-primary {
+      background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-pill);
+      font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+      padding: 0.7rem 1.4rem; display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; transition: all 0.2s; box-shadow: var(--shadow-btn);
+    }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-primary svg { width: 16px; height: 16px; }
+    .btn-outline-sm {
+      background: none; border: 1.5px solid var(--color-outline-variant); border-radius: var(--radius-pill);
+      color: var(--color-on-surface-variant); font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.82rem; transition: all 0.2s;
+    }
+    .btn-outline-sm:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-container); }
+    .btn-outline-sm svg { width: 15px; height: 15px; }
+    .btn-danger {
+      background: var(--color-error); color: #fff; border: none; border-radius: var(--radius-pill);
+      font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+      padding: 0.7rem 1.4rem; display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; transition: all 0.2s;
+    }
+    .btn-danger:hover { opacity: 0.88; }
+    .btn-danger svg { width: 16px; height: 16px; }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--color-outline); }
+    .empty-state svg { width: 48px; height: 48px; margin: 0 auto 0.75rem; display: block; opacity: 0.4; }
+    .empty-state p { font-size: 0.85rem; font-weight: 600; }
+
+    .search-bar { position: relative; margin-bottom: 1rem; }
+    .search-bar input { padding: 0.75rem 1rem 0.75rem 2.5rem; font-size: 0.88rem; border-radius: 0.85rem; }
+    .search-bar svg { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--color-outline); }
+
+    /* toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 0.75rem; }
+    .toggle { position: relative; width: 44px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; border-radius: 999px;
+      background: var(--color-outline-variant); cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; left: 3px; top: 3px; transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--color-primary); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-label { font-size: 0.82rem; font-weight: 600; color: var(--color-on-surface-variant); }
+
+    .divider { height: 1px; background: var(--color-outline-variant); margin: 1.25rem 0; }
+    .btn-group-form { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+
+    /* ── IMPRESSÃO E PRÉ-VISUALIZAÇÃO ABNT ── */
+    @media print {
+      body > *:not(#print-output), #sidebar, .topbar, #mobile-nav, #toast-container,
+      #notif-overlay, #notif-panel, .modal-overlay, .btn-collapse, .btn-sidebar-action,
+      .search-bar, .filter-bar, .action-btns { display: none !important; }
+      #print-output { display: block !important; position: absolute; left: 0; top: 0; width: 100%;
+        padding: 30mm 20mm 20mm 30mm; background: #fff; color: #000;
+        font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 12pt; line-height: 1.5; }
+      @page { margin: 0; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div id="print-output" style="display:none;"></div>
+
+<!-- NOTIFICAÇÕES -->
+<div id="notif-overlay" onclick="closeNotif()"></div>
+<div id="notif-panel">
+  <div style="padding:1rem 1.25rem;border-bottom:1.5px solid var(--color-outline-variant);display:flex;align-items:center;justify-content:space-between;background:var(--color-surface-container-lowest);position:sticky;top:0;">
+    <div><h3 style="font-size:0.95rem;font-weight:800;">Notificações</h3><p id="notif-count-label" style="font-size:0.7rem;color:var(--color-outline);font-weight:600;"></p></div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button onclick="markAllRead()" style="font-size:0.75rem;font-weight:700;color:var(--color-primary);background:none;border:none;cursor:pointer;">Marcar lidas</button>
+      <button onclick="closeNotif()" class="btn-icon" style="width:32px;height:32px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="notif-list" style="flex:1;overflow-y:auto;"></div>
+</div>
+
+<!-- MODAL DOCUMENTO -->
+<div class="modal-overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-doc-title">Detalhes do Documento</h3>
+      <button class="btn-icon" style="width:32px;height:32px;" onclick="closeModal('modal-doc')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-doc-body"></div>
+    <div class="modal-footer" id="modal-doc-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL REUNIÃO -->
+<div class="modal-overlay" id="modal-reuniao">
+  <div class="modal">
+    <div class="modal-header"><h3>Nova Reunião</h3>
+      <button class="btn-icon" style="width:32px;height:32px;" onclick="closeModal('modal-reuniao')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Assunto</label><div class="input-wrap"><input type="text" class="input-field no-icon" id="r-assunto" placeholder="Ex: Reunião de avaliação trimestral"></div></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Data</label><div class="input-wrap"><input type="date" class="input-field no-icon" id="r-data"></div></div>
+        <div class="form-group"><label class="form-label">Horário</label><div class="input-wrap"><input type="time" class="input-field no-icon" id="r-hora"></div></div>
+      </div>
+      <div class="form-group"><label class="form-label">Participantes</label><div class="select-wrap"><select class="input-field" id="r-participantes"><option value="todos">Todos os utilizadores</option><option value="professores">Apenas Professores</option><option value="secretario">Apenas Secretário</option></select></div></div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="input-field" id="r-obs" rows="3" placeholder="Informações adicionais sobre a reunião..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline-sm" onclick="closeModal('modal-reuniao')">Cancelar</button>
+      <button class="btn-primary" onclick="saveReuniao()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.95 3.36 2 2 0 0 1 3.94 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Criar e Notificar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMUNICADO -->
+<div class="modal-overlay" id="modal-comunicado">
+  <div class="modal">
+    <div class="modal-header"><h3>Novo Comunicado</h3>
+      <button class="btn-icon" style="width:32px;height:32px;" onclick="closeModal('modal-comunicado')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Título</label><div class="input-wrap"><input type="text" class="input-field no-icon" id="c-titulo" placeholder="Título do comunicado"></div></div>
+      <div class="form-group"><label class="form-label">Destinatários</label><div class="select-wrap"><select class="input-field" id="c-dest"><option value="todos">Todos os utilizadores</option><option value="professores">Apenas Professores</option><option value="secretario">Apenas Secretário</option></select></div></div>
+      <div class="form-group"><label class="form-label">Mensagem</label><textarea class="input-field" id="c-msg" rows="5" placeholder="Escreva o conteúdo do comunicado..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline-sm" onclick="closeModal('modal-comunicado')">Cancelar</button>
+      <button class="btn-primary" onclick="saveComunicado()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Publicar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRAZO -->
+<div class="modal-overlay" id="modal-prazo">
+  <div class="modal">
+    <div class="modal-header"><h3>Novo Prazo de Submissão</h3>
+      <button class="btn-icon" style="width:32px;height:32px;" onclick="closeModal('modal-prazo')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Tipo de Documento</label><div class="select-wrap"><select class="input-field" id="p-tipo"><option>Planos de Aula</option><option>Pautas</option><option>Avaliações Contínuas</option><option>Relatórios</option><option>Justificativos</option></select></div></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Data de Abertura</label><div class="input-wrap"><input type="date" class="input-field no-icon" id="p-abertura"></div></div>
+        <div class="form-group"><label class="form-label">Data Limite</label><div class="input-wrap"><input type="date" class="input-field no-icon" id="p-limite"></div></div>
+      </div>
+      <div class="form-group"><label class="form-label">Alertar com antecedência</label><div class="select-wrap"><select class="input-field" id="p-alerta"><option value="1">1 dia antes</option><option value="3" selected>3 dias antes</option><option value="7">1 semana antes</option></select></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline-sm" onclick="closeModal('modal-prazo')">Cancelar</button>
+      <button class="btn-primary" onclick="savePrazo()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Definir Prazo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="sidebar-logo-name">FilDocs</div><div class="sidebar-logo-sub">Director Geral</div></div>
+    </div>
+    <button class="btn-collapse" onclick="toggleSidebar()" title="Recolher menu">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <button class="nav-item active" data-view="dashboard" onclick="navTo('dashboard')" data-tooltip="Painel">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="nav-label">Painel</span>
+    </button>
+    <button class="nav-item" data-view="documentos" onclick="navTo('documentos')" data-tooltip="Documentos">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="nav-label">Documentos</span><span class="nav-badge" id="badge-docs">0</span>
+    </button>
+    <button class="nav-item" data-view="upload" onclick="navTo('upload')" data-tooltip="Publicar Documento">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <span class="nav-label">Publicar Doc.</span>
+    </button>
+    <div class="nav-section-label" style="margin-top:0.5rem;">Gestão</div>
+    <button class="nav-item" data-view="prazos" onclick="navTo('prazos')" data-tooltip="Prazos">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Prazos</span>
+    </button>
+    <button class="nav-item" data-view="reunioes" onclick="navTo('reunioes')" data-tooltip="Reuniões">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="nav-label">Reuniões</span>
+    </button>
+    <button class="nav-item" data-view="comunicados" onclick="navTo('comunicados')" data-tooltip="Comunicados">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Comunicados</span>
+    </button>
+    <button class="nav-item" data-view="monitoramento" onclick="navTo('monitoramento')" data-tooltip="Monitoramento">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="nav-label">Monitoramento</span>
+    </button>
+    <div class="nav-section-label" style="margin-top:0.5rem;">Conta</div>
+    <button class="nav-item" data-view="perfil" onclick="navTo('perfil')" data-tooltip="Perfil">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Perfil</span>
+    </button>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user" onclick="navTo('perfil')">
+      <div class="sidebar-avatar" id="sb-avatar">DG</div>
+      <div class="sidebar-user-info"><div class="sidebar-user-name" id="sb-name">Director Geral</div><div class="sidebar-user-role">Director Pedagógico</div></div>
+    </div>
+    <div class="sidebar-bottom-actions">
+      <button class="btn-sidebar-action" onclick="toggleTheme()">
+        <svg id="sb-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+        <svg id="sb-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span class="sidebar-bottom-labels">Tema</span>
+      </button>
+      <button class="btn-sidebar-action" onclick="logout()" style="color:var(--color-error);border-color:var(--color-error-container);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="sidebar-bottom-labels">Sair</span>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+  <div class="topbar">
+    <div class="topbar-left"><h1 id="topbar-title">Painel de Controlo</h1><p id="topbar-sub">Bem-vindo de volta, Director</p></div>
+    <div class="topbar-right">
+      <button class="btn-icon" onclick="openNotif()" title="Notificações">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <section class="view active" id="view-dashboard">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:#fef9c3;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#854d0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="stat-value" id="stat-pendentes" style="color:#854d0e;">0</div><div class="stat-label">Pendentes</div><div class="stat-trend trend-down" id="trend-pendentes"></div></div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:#dcfce7;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="stat-value" id="stat-aprovados" style="color:#16a34a;">0</div><div class="stat-label">Aprovados</div></div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:#fee2e2;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div><div class="stat-value" id="stat-rejeitados" style="color:#991b1b;">0</div><div class="stat-label">Rejeitados</div></div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:var(--color-primary-container);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div><div class="stat-value" id="stat-profs" style="color:var(--color-primary);">0</div><div class="stat-label">Professores Activos</div></div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:#f3e8ff;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div><div class="stat-value" id="stat-atrasos" style="color:#7e22ce;">0</div><div class="stat-label">Atrasos</div></div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-icon" style="background:var(--color-secondary-container);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--color-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div></div><div class="stat-value" id="stat-total" style="color:var(--color-secondary);">0</div><div class="stat-label">Total de Docs</div></div>
+    </div>
+    <div class="grid-2" style="gap:1.25rem;">
+      <div><div class="section-header"><div><div class="section-title">Actividade Recente</div><div class="section-sub">Últimas submissões e acções</div></div><button class="btn-outline-sm" onclick="navTo('documentos')">Ver tudo</button></div><div class="card" style="overflow:hidden;"><div id="dash-activity" style="max-height:340px;overflow-y:auto;"></div></div></div>
+      <div><div class="section-header"><div><div class="section-title">Prazos Próximos</div><div class="section-sub">A expirar em breve</div></div><button class="btn-outline-sm" onclick="navTo('prazos')">Gerir</button></div><div id="dash-prazos"></div><div class="section-header" style="margin-top:1.25rem;"><div><div class="section-title">Reuniões Agendadas</div></div><button class="btn-outline-sm" onclick="openModal('modal-reuniao')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova</button></div><div id="dash-reunioes"></div></div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTOS -->
+  <section class="view" id="view-documentos">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Gestão de Documentos</div><div class="section-sub">Aprovação, rejeição e arquivo de documentos recebidos</div></div></div>
+    <div class="search-bar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" class="input-field" placeholder="Pesquisar documentos..." id="search-docs" oninput="renderDocTable()"></div>
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-chip active" data-filter="todos" onclick="setFilter('todos',this)">Todos</button>
+      <button class="filter-chip" data-filter="pendente" onclick="setFilter('pendente',this)">Pendentes</button>
+      <button class="filter-chip" data-filter="em_analise" onclick="setFilter('em_analise',this)">Em Análise</button>
+      <button class="filter-chip" data-filter="aprovado" onclick="setFilter('aprovado',this)">Aprovados</button>
+      <button class="filter-chip" data-filter="rejeitado" onclick="setFilter('rejeitado',this)">Rejeitados</button>
+      <button class="filter-chip" data-filter="arquivado" onclick="setFilter('arquivado',this)">Arquivados</button>
+    </div>
+    <div class="card" style="overflow:hidden;"><div style="overflow-x:auto;"><table class="doc-table"><thead><tr><th>Documento</th><th>Remetente</th><th>Tipo</th><th>Estado</th><th>Data</th><th>Acções</th></tr></thead><tbody id="doc-tbody"></tbody></table></div></div>
+  </section>
+
+  <!-- PUBLICAR DOC -->
+  <section class="view" id="view-upload">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Publicar Documento</div><div class="section-sub">Carregue um ficheiro para partilhar com professores e/ou secretário</div></div></div>
+    <div class="card" style="padding:1.5rem;max-width:680px;">
+      <div class="form-group"><label class="form-label">Título do Documento</label><div class="input-wrap"><input type="text" class="input-field no-icon" id="up-titulo" placeholder="Ex: Comunicado Trimestral — Janeiro 2025"></div></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Categoria</label><div class="select-wrap"><select class="input-field" id="up-cat"><option>Comunicado</option><option>Circular</option><option>Regulamento</option><option>Acta de Reunião</option><option>Relatório</option><option>Outro</option></select></div></div>
+        <div class="form-group"><label class="form-label">Destinatários</label><div class="select-wrap"><select class="input-field" id="up-dest"><option value="todos">Todos (Professores + Secretário)</option><option value="professores">Apenas Professores</option><option value="secretario">Apenas Secretário</option></select></div></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações (opcional)</label><textarea class="input-field" id="up-obs" rows="3" placeholder="Informações adicionais sobre este documento..."></textarea></div>
+      <div class="drop-zone" id="up-zone" onclick="document.getElementById('up-file').click()">
+        <input type="file" id="up-file" style="display:none;" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" onchange="handleUpload(this.files)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <h4>Arraste ou clique para seleccionar</h4><p>PDF, DOCX, XLSX, JPG, PNG • Máx. 25MB</p>
+      </div>
+      <div id="up-file-list" style="display:none;" class="card" style="margin-top:1rem;overflow:hidden;margin-top:0.75rem;border-radius:0.85rem;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.25rem;">
+        <button class="btn-outline-sm" onclick="clearUpload()">Cancelar</button>
+        <button class="btn-primary" onclick="submitUpload()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Publicar e Notificar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRAZOS -->
+  <section class="view" id="view-prazos">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Gestão de Prazos</div><div class="section-sub">Defina e controle os períodos de submissão</div></div><button class="btn-primary" onclick="openModal('modal-prazo')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Prazo</button></div>
+    <div id="prazos-list"></div>
+  </section>
+
+  <!-- REUNIÕES -->
+  <section class="view" id="view-reunioes">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Reuniões</div><div class="section-sub">Agende e gerencie reuniões institucionais</div></div><button class="btn-primary" onclick="openModal('modal-reuniao')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova Reunião</button></div>
+    <div id="reunioes-list"></div>
+  </section>
+
+  <!-- COMUNICADOS -->
+  <section class="view" id="view-comunicados">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Comunicados</div><div class="section-sub">Crie e publique comunicados institucionais</div></div><button class="btn-primary" onclick="openModal('modal-comunicado')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Comunicado</button></div>
+    <div id="comunicados-list"></div>
+  </section>
+
+  <!-- MONITORAMENTO -->
+  <section class="view" id="view-monitoramento">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Monitoramento</div><div class="section-sub">Produtividade e actividade dos colaboradores</div></div></div>
+    <div class="grid-2" style="margin-bottom:1.25rem;">
+      <div class="card" style="padding:1.25rem;"><div class="section-header" style="margin-bottom:0.75rem;"><div class="section-title">Produtividade por Professor</div></div><div id="prod-list"></div></div>
+      <div class="card" style="padding:1.25rem;"><div class="section-header" style="margin-bottom:0.75rem;"><div class="section-title">Log de Actividade</div></div><div id="log-list" style="max-height:400px;overflow-y:auto;"></div></div>
+    </div>
+  </section>
+
+  <!-- PERFIL -->
+  <section class="view" id="view-perfil">
+    <div class="section-header"><div><div class="section-title" style="font-size:1.3rem;">Perfil</div><div class="section-sub">Informações da sua conta</div></div></div>
+    <div class="card" style="padding:1.5rem;max-width:560px;">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+        <div style="width:64px;height:64px;border-radius:18px;background:var(--color-primary-container);color:var(--color-primary);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;" id="perfil-avatar">DG</div>
+        <div><div style="font-size:1.1rem;font-weight:800;" id="perfil-name">Director Geral</div><div style="font-size:0.78rem;color:var(--color-outline);font-weight:600;">Director Pedagógico — FilDocs</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-group"><label class="form-label">Nome Completo</label><div class="input-wrap"><input type="text" class="input-field no-icon" id="p-nome" placeholder="Nome completo"></div></div>
+      <div class="form-group"><label class="form-label">E-mail</label><div class="input-wrap"><input type="email" class="input-field no-icon" id="p-email" placeholder="email@sfsermao.ao"></div></div>
+      <div class="divider"></div>
+      <div class="form-group"><label class="form-label">Tempo de Sessão</label><div class="select-wrap"><select class="input-field" id="p-sessao"><option value="30">30 minutos</option><option value="60" selected>1 hora</option><option value="120">2 horas</option><option value="480">8 horas</option></select></div></div>
+      <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.5rem;">
+        <button class="btn-outline-sm" onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Terminar Sessão</button>
+        <button class="btn-primary" onclick="savePerfil()">Guardar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- MOBILE NAV -->
+<nav id="mobile-nav">
+  <button class="mobile-nav-btn active" data-view="dashboard" onclick="navTo('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Painel</button>
+  <button class="mobile-nav-btn" data-view="documentos" onclick="navTo('documentos')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Docs</button>
+  <button class="mobile-nav-btn" data-view="comunicados" onclick="navTo('comunicados')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Comun.</button>
+  <button class="mobile-nav-btn" data-view="monitoramento" onclick="navTo('monitoramento')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Monitor</button>
+</nav>
+
+<script>
+/* ══════════════════════════════════════════════
+   PREVIEW_STYLES — NORMA ABNT
+══════════════════════════════════════════════ */
+const PREVIEW_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    background: #f8f9fa; color: #1a1a1a;
+    padding: 30mm 20mm 20mm 30mm; font-size: 12pt; line-height: 1.5;
+  }
+  .abnt-header { text-align: center; border-bottom: 2px solid #0d7377; padding-bottom: 14px; margin-bottom: 24px; }
+  .abnt-header .inst-name { font-size: 12pt; font-weight: 700; color: #0d7377; text-transform: uppercase; letter-spacing: 0.04em; }
+  .abnt-header .inst-sub { font-size: 10pt; font-weight: 400; color: #444; margin-top: 4px; }
+  .abnt-title { text-align: center; font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 20px; }
+  .abnt-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin: 20px 0; padding: 14px 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+  .abnt-field .field-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #666; display: block; margin-bottom: 2px; }
+  .abnt-field .field-value { font-size: 10pt; font-weight: 600; color: #1a1a1a; }
+  .abnt-body { margin: 24px 0; font-size: 12pt; line-height: 1.5; text-align: justify; text-indent: 1.25cm; white-space: pre-wrap; }
+  .abnt-body-box { padding: 16px 20px; background: #fff; border-left: 4px solid #0d7377; border-radius: 0 6px 6px 0; font-size: 12pt; line-height: 1.5; white-space: pre-wrap; }
+  .abnt-signatures { margin-top: 48px; display: flex; justify-content: space-around; gap: 24px; }
+  .abnt-sig { text-align: center; flex: 1; max-width: 200px; border-top: 1px solid #333; padding-top: 8px; font-size: 9pt; color: #444; line-height: 1.4; }
+  .abnt-footer { margin-top: 32px; font-size: 8pt; color: #888; text-align: right; border-top: 1px solid #ccc; padding-top: 6px; }
+  .abnt-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 10pt; }
+  .abnt-table th { background: #0d7377; color: #fff; padding: 10px 8px; text-align: left; font-weight: 700; border: 1px solid #aaa; font-size: 9pt; }
+  .abnt-table td { padding: 9px 8px; border: 1px solid #bbb; color: #1a1a1a; vertical-align: middle; }
+  .abnt-table tr:nth-child(even) td { background: #f4f4f4; }
+  .status-badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status-pendente { background: #fef9c3; color: #854d0e; }
+  .status-em_analise { background: #dbeafe; color: #1d4ed8; }
+  .status-aprovado { background: #dcfce7; color: #166534; }
+  .status-rejeitado { background: #fee2e2; color: #991b1b; }
+  .preview-actions { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1.5px solid #e2e8f0; padding: 12px 24px; display: flex; gap: 10px; justify-content: flex-end; box-shadow: 0 -4px 16px rgba(0,0,0,0.06); z-index: 100; }
+  .pv-btn { padding: 9px 20px; border-radius: 999px; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border: 1.5px solid transparent; transition: all 0.2s; text-decoration: none; }
+  .pv-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .pv-btn-primary { background: #0d7377; color: #fff; border-color: #0d7377; box-shadow: 0 3px 10px rgba(13,115,119,0.3); }
+  .pv-btn-primary:hover { background: #0a5f62; }
+  .pv-btn-success { background: #16a34a; color: #fff; border-color: #16a34a; box-shadow: 0 3px 10px rgba(22,163,74,0.25); }
+  .pv-btn-success:hover { background: #15803d; }
+  .pv-btn-danger { background: #dc2626; color: #fff; border-color: #dc2626; box-shadow: 0 3px 10px rgba(220,38,38,0.25); }
+  .pv-btn-danger:hover { background: #b91c1c; }
+  .pv-btn-outline { background: #fff; color: #555; border-color: #d1d5db; }
+  .pv-btn-outline:hover { border-color: #0d7377; color: #0d7377; background: #e6f4f4; }
+  @media print { .preview-actions { display: none !important; } body { padding: 0; background: #fff; } }
+  @page { margin: 30mm 20mm 20mm 30mm; size: A4; }
+`;
+
+/* ══════════════════════════════════════════════
+   DB LOCAL
+══════════════════════════════════════════════ */
+const db = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } },
+  getObj: k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+};
+
+/* ══════════════════════════════════════════════
+   LOGS
+══════════════════════════════════════════════ */
+function addLog(action, details) {
+  const logs = db.get('fildocs_logs');
+  logs.push({ id: Date.now(), action, details, user: db.getObj('fildocs_session')?.user || 'sistema', timestamp: new Date().toISOString() });
+  db.set('fildocs_logs', logs);
+}
+
+/* ══════════════════════════════════════════════
+   AUTENTICAÇÃO
+══════════════════════════════════════════════ */
+function checkAuth() {
+  const s = db.getObj('fildocs_session');
+  if (!s || !s.auth) { window.location.href = 'login.html'; return; }
+  document.getElementById('sb-name').textContent = s.name || 'Director Geral';
+  document.getElementById('sb-avatar').textContent = s.initials || 'DG';
+  document.getElementById('perfil-avatar').textContent = s.initials || 'DG';
+  document.getElementById('perfil-name').textContent = s.name || 'Director Geral';
+  document.getElementById('p-nome').value = s.name || '';
+  document.getElementById('p-email').value = s.user || '';
+}
+function logout() { db.set('fildocs_session', {}); window.location.href = 'login.html'; }
+
+/* ══════════════════════════════════════════════
+   TEMA E SIDEBAR
+══════════════════════════════════════════════ */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  db.set('fildocs_theme', t);
+  document.getElementById('sb-sun').style.display = t === 'dark' ? 'block' : 'none';
+  document.getElementById('sb-moon').style.display = t === 'dark' ? 'none' : 'block';
+}
+function toggleTheme() { applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const mc = document.getElementById('main-content');
+  const c = sb.classList.toggle('collapsed');
+  mc.classList.toggle('expanded', c);
+  db.set('fildocs_sidebar', c ? '1' : '0');
+}
+
+/* ══════════════════════════════════════════════
+   NAVEGAÇÃO
+══════════════════════════════════════════════ */
+const viewTitles = {
+  dashboard: ['Painel de Controlo', 'Visão geral do sistema'],
+  documentos: ['Gestão de Documentos', 'Aprove, rejeite ou arquive documentos'],
+  upload: ['Publicar Documento', 'Partilhe ficheiros com a equipa'],
+  prazos: ['Gestão de Prazos', 'Controle os períodos de submissão'],
+  reunioes: ['Reuniões', 'Agende e gerencie reuniões'],
+  comunicados: ['Comunicados', 'Comunicados institucionais'],
+  monitoramento: ['Monitoramento', 'Produtividade e actividade'],
+  perfil: ['Perfil', 'Informações da conta'],
+};
+function navTo(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  const [t, s] = viewTitles[view] || [view, ''];
+  document.getElementById('topbar-title').textContent = t;
+  document.getElementById('topbar-sub').textContent = s;
+  if (view === 'dashboard') renderDashboard();
+  if (view === 'documentos') renderDocTable();
+  if (view === 'prazos') renderPrazos();
+  if (view === 'reunioes') renderReunioes();
+  if (view === 'comunicados') renderComunicados();
+  if (view === 'monitoramento') renderMonitoramento();
+  window.scrollTo(0, 0);
+}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+function toast(msg, type = 'info') {
+  const icons = {
+    success: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    error: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  };
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `${icons[type] || icons.info}<span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+/* ══════════════════════════════════════════════
+   MODAIS
+══════════════════════════════════════════════ */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ══════════════════════════════════════════════
+   NOTIFICAÇÕES
+══════════════════════════════════════════════ */
+function openNotif() {
+  document.getElementById('notif-panel').classList.add('open');
+  document.getElementById('notif-overlay').classList.add('open');
+  renderNotifs();
+}
+function closeNotif() {
+  document.getElementById('notif-panel').classList.remove('open');
+  document.getElementById('notif-overlay').classList.remove('open');
+}
+function renderNotifs() {
+  const n = db.get('fildocs_notifs_director');
+  const list = document.getElementById('notif-list');
+  const unread = n.filter(x => !x.read).length;
+  document.getElementById('notif-count-label').textContent = unread > 0 ? `${unread} não lida(s)` : 'Tudo lido';
+  document.getElementById('notif-dot').style.display = unread > 0 ? 'block' : 'none';
+  document.getElementById('badge-docs').textContent = db.get('fildocs_docs').filter(d => d.estado === 'pendente').length || 0;
+  if (!n.length) {
+    list.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><p>Sem notificações</p></div>';
+    return;
+  }
+  list.innerHTML = n.slice().reverse().map((x, i) => `
+    <div class="notif-item ${x.read ? '' : 'unread'}" onclick="readNotif(${n.length - 1 - i})">
+      <div class="notif-icon-box" style="color:${x.color || 'var(--color-primary)'}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="notif-title">${x.title}</div>
+        <div class="notif-body">${x.body}</div>
+        <div class="notif-time">${x.time}</div>
+      </div>
+      ${!x.read ? '<div class="unread-dot"></div>' : ''}
+    </div>
+  `).join('');
+}
+function readNotif(i) { const n = db.get('fildocs_notifs_director'); if (n[i]) { n[i].read = true; db.set('fildocs_notifs_director', n); renderNotifs(); } }
+function markAllRead() { const n = db.get('fildocs_notifs_director').map(x => ({ ...x, read: true })); db.set('fildocs_notifs_director', n); renderNotifs(); toast('Todas as notificações marcadas como lidas', 'success'); }
+
+/* ══════════════════════════════════════════════
+   BADGES
+══════════════════════════════════════════════ */
+function badgeHtml(e) {
+  const m = { pendente: 'badge-pending', em_analise: 'badge-analysis', aprovado: 'badge-approved', rejeitado: 'badge-rejected', arquivado: 'badge-archived', expirado: 'badge-expired' };
+  const l = { pendente: 'Pendente', em_analise: 'Em Análise', aprovado: 'Aprovado', rejeitado: 'Rejeitado', arquivado: 'Arquivado', expirado: 'Expirado' };
+  return `<span class="badge ${m[e] || 'badge-primary'}">${l[e] || e}</span>`;
+}
+
+/* ══════════════════════════════════════════════
+   DOCUMENTOS
+══════════════════════════════════════════════ */
+let currentFilter = 'todos';
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderDocTable();
+}
+function renderDocTable() {
+  const docs = db.get('fildocs_docs');
+  const q = (document.getElementById('search-docs')?.value || '').toLowerCase();
+  const filtered = docs.filter(d => {
+    const matchFilter = currentFilter === 'todos' || d.estado === currentFilter;
+    const matchSearch = !q || d.nome.toLowerCase().includes(q) || d.remetente.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+  const tbody = document.getElementById('doc-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Nenhum documento encontrado</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map((d, i) => `
+    <tr onclick="viewDoc(${docs.indexOf(d)})">
+      <td><div class="doc-name">${d.nome}</div><div class="doc-meta">${d.tamanho || ''}</div></td>
+      <td style="font-size:0.82rem;font-weight:600;">${d.remetente}</td>
+      <td><span class="badge badge-primary">${d.tipo}</span></td>
+      <td>${badgeHtml(d.estado)}</td>
+      <td style="font-size:0.78rem;color:var(--color-outline);font-weight:600;">${d.data}</td>
+      <td onclick="event.stopPropagation()">
+        <div class="action-btns">
+          <button class="btn-action btn-view" onclick="previewDocument('${d.nome}')" title="Pré-visualizar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver
+          </button>
+          ${d.estado === 'pendente' || d.estado === 'em_analise' ? `
+            <button class="btn-action btn-approve" onclick="changeDocEstado(${docs.indexOf(d)},'aprovado')">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Aprovar
+            </button>
+            <button class="btn-action btn-reject" onclick="changeDocEstado(${docs.indexOf(d)},'rejeitado')">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Rejeitar
+            </button>
+          ` : ''}
+          ${d.estado === 'aprovado' ? `<button class="btn-action btn-archive" onclick="changeDocEstado(${docs.indexOf(d)},'arquivado')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>Arquivar</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════
+   PRÉ-VISUALIZAÇÃO DE DOCUMENTO (ABNT)
+══════════════════════════════════════════════ */
+function previewDocument(nome) {
+  const docs = db.get('fildocs_docs');
+  const doc = docs.find(d => d.nome === nome);
+  if (!doc) return;
+  const statusClass = { pendente: 'status-pendente', em_analise: 'status-em_analise', aprovado: 'status-aprovado', rejeitado: 'status-rejeitado' };
+  const statusLabel = { pendente: 'Pendente', em_analise: 'Em Análise', aprovado: 'Aprovado', rejeitado: 'Rejeitado' };
+  const preview = window.open('', '_blank', 'width=860,height=960');
+  preview.document.write(`<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><title>${doc.nome}</title><style>${PREVIEW_STYLES}</style></head><body>
+    <div class="abnt-header"><div class="inst-name">Complexo Escolar São Filipe Sermão</div><div class="inst-sub">Sistema de Gestão Documental — FilDocs</div></div>
+    <div class="abnt-title">Ficha de Análise Documental</div>
+    <div class="abnt-meta">
+      <div class="abnt-field"><span class="field-label">Documento</span><span class="field-value">${doc.nome}</span></div>
+      <div class="abnt-field"><span class="field-label">Tipo</span><span class="field-value">${doc.tipo}</span></div>
+      <div class="abnt-field"><span class="field-label">Remetente</span><span class="field-value">${doc.remetente}</span></div>
+      <div class="abnt-field"><span class="field-label">Estado Actual</span><span class="field-value">${statusLabel[doc.estado] || doc.estado}</span></div>
+      <div class="abnt-field"><span class="field-label">Data de Submissão</span><span class="field-value">${doc.data}</span></div>
+      <div class="abnt-field"><span class="field-label">Dimensão</span><span class="field-value">${doc.tamanho || '—'}</span></div>
+    </div>
+    ${doc.obs ? `<div class="abnt-body-box"><strong>Observações:</strong><br><br>${doc.obs}</div>` : ''}
+    <div class="abnt-signatures">
+      <div class="abnt-sig">Assinatura do Remetente<br><span style="font-size:8pt;color:#888;">${doc.remetente}</span></div>
+      <div class="abnt-sig">Validado pelo Director<br><span style="font-size:8pt;color:#888;">&nbsp;</span></div>
+      <div class="abnt-sig">Carimbo da Escola<br><span style="font-size:8pt;color:#888;">&nbsp;</span></div>
+    </div>
+    <div class="abnt-footer">FilDocs — Sistema de Gestão Documental | Ficha gerada em ${new Date().toLocaleString('pt-AO')}</div>
+    <div class="preview-actions">
+      <button class="pv-btn pv-btn-outline" onclick="window.close()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Fechar</button>
+      <button class="pv-btn pv-btn-primary" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir</button>
+      ${doc.estado === 'pendente' || doc.estado === 'em_analise' ? `
+        <button class="pv-btn pv-btn-success" onclick="opener.approveFromPreview('${doc.nome}');window.close();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Aprovar</button>
+        <button class="pv-btn pv-btn-danger" onclick="opener.rejectFromPreview('${doc.nome}');window.close();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Rejeitar</button>
+      ` : ''}
+    </div>
+  </body></html>`);
+  preview.document.close();
+}
+function approveFromPreview(nome) {
+  const docs = db.get('fildocs_docs'); const i = docs.findIndex(d => d.nome === nome);
+  if (i !== -1) changeDocEstado(i, 'aprovado');
+}
+function rejectFromPreview(nome) {
+  const docs = db.get('fildocs_docs'); const i = docs.findIndex(d => d.nome === nome);
+  if (i !== -1) changeDocEstado(i, 'rejeitado');
+}
+
+function changeDocEstado(i, estado) {
+  const docs = db.get('fildocs_docs');
+  if (!docs[i]) return;
+  docs[i].estado = estado;
+  db.set('fildocs_docs', docs);
+  const notifKey = docs[i].origem === 'secretario' ? 'fildocs_notifs_secretario' : 'fildocs_notifs_professor';
+  const notifs = db.get(notifKey);
+  const statusLabel = { aprovado: 'aprovado', rejeitado: 'rejeitado', arquivado: 'arquivado' };
+  notifs.push({
+    title: `Documento ${statusLabel[estado]}`,
+    body: `O seu documento "${docs[i].nome}" foi ${estado} pelo Director.`,
+    color: estado === 'aprovado' ? '#16a34a' : estado === 'rejeitado' ? 'var(--color-error)' : 'var(--color-outline)',
+    time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false
+  });
+  db.set(notifKey, notifs);
+  addLog('doc_status_changed', `Documento "${docs[i].nome}" alterado para "${estado}"`);
+  if (estado === 'aprovado') generateApprovalDispatch(docs[i]);
+  toast(`Documento ${estado} com sucesso!`, estado === 'rejeitado' ? 'error' : 'success');
+  renderDocTable(); renderDashboard(); closeModal('modal-doc');
+}
+
+/* ══════════════════════════════════════════════
+   DESPACHO DE APROVAÇÃO (ABNT)
+══════════════════════════════════════════════ */
+function generateApprovalDispatch(doc) {
+  const dataAtual = new Date().toLocaleString('pt-AO', { day: '2-digit', month: 'long', year: 'numeric' });
+  const preview = window.open('', '_blank', 'width=860,height=960');
+  preview.document.write(`<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><title>Despacho de Aprovação</title><style>${PREVIEW_STYLES}</style></head><body>
+    <div class="abnt-header"><div class="inst-name">Complexo Escolar São Filipe Sermão</div><div class="inst-sub">Sistema de Gestão Documental — FilDocs</div></div>
+    <div class="abnt-title">Despacho de Aprovação</div>
+    <div class="abnt-meta">
+      <div class="abnt-field"><span class="field-label">Documento</span><span class="field-value">${doc.nome}</span></div>
+      <div class="abnt-field"><span class="field-label">Tipo</span><span class="field-value">${doc.tipo}</span></div>
+      <div class="abnt-field"><span class="field-label">Remetente</span><span class="field-value">${doc.remetente}</span></div>
+      <div class="abnt-field"><span class="field-label">Data de Submissão</span><span class="field-value">${doc.data}</span></div>
+      <div class="abnt-field"><span class="field-label">Data de Aprovação</span><span class="field-value">${new Date().toLocaleDateString('pt-AO')}</span></div>
+      <div class="abnt-field"><span class="field-label">Aprovado por</span><span class="field-value">Director Geral</span></div>
+    </div>
+    <div class="abnt-body-box"><strong>DESPACHO:</strong><br><br>
+      Após análise técnica e pedagógica, <strong>APROVA-SE</strong> o documento "${doc.nome}", submetido por ${doc.remetente}, para os devidos efeitos de arquivo e cumprimento institucional.<br><br>
+      ${doc.obs ? `<strong>Observações:</strong> ${doc.obs}<br><br>` : ''}
+      O presente despacho entra em vigor na data de sua emissão.
+    </div>
+    <div class="abnt-signatures">
+      <div class="abnt-sig">________________________<br>Director Geral</div>
+      <div class="abnt-sig">________________________<br>Secretário Geral</div>
+      <div class="abnt-sig">________________________<br>Carimbo Institucional</div>
+    </div>
+    <div class="abnt-footer">Documento gerado automaticamente por FilDocs | ${dataAtual}</div>
+    <div class="preview-actions">
+      <button class="pv-btn pv-btn-outline" onclick="window.close()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Fechar</button>
+      <button class="pv-btn pv-btn-primary" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir</button>
+    </div>
+  </body></html>`);
+  preview.document.close();
+}
+
+function viewDoc(i) {
+  const docs = db.get('fildocs_docs'); const d = docs[i]; if (!d) return;
+  document.getElementById('modal-doc-title').textContent = d.nome;
+  document.getElementById('modal-doc-body').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">${badgeHtml(d.estado)}<span class="badge badge-primary">${d.tipo}</span>${d.origem ? `<span class="badge badge-secondary">${d.origem}</span>` : ''}</div>
+      <div class="divider" style="margin:0.25rem 0;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div><div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--color-outline);margin-bottom:0.2rem;">Remetente</div><div style="font-size:0.88rem;font-weight:700;">${d.remetente}</div></div>
+        <div><div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--color-outline);margin-bottom:0.2rem;">Data</div><div style="font-size:0.88rem;font-weight:700;">${d.data}</div></div>
+        <div><div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--color-outline);margin-bottom:0.2rem;">Tamanho</div><div style="font-size:0.88rem;font-weight:700;">${d.tamanho||'—'}</div></div>
+        <div><div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--color-outline);margin-bottom:0.2rem;">Origem</div><div style="font-size:0.88rem;font-weight:700;">${d.origem||'Professor'}</div></div>
+      </div>
+      ${d.obs ? `<div style="padding:0.85rem;border-radius:0.85rem;background:var(--color-surface-container-low);font-size:0.82rem;color:var(--color-on-surface-variant);line-height:1.5;">${d.obs}</div>` : ''}
+    </div>`;
+  const footer = document.getElementById('modal-doc-footer'); footer.innerHTML = '';
+  const close = document.createElement('button'); close.className = 'btn-outline-sm'; close.textContent = 'Fechar'; close.onclick = () => closeModal('modal-doc'); footer.appendChild(close);
+  if (d.estado === 'pendente' || d.estado === 'em_analise') {
+    const btnA = document.createElement('button'); btnA.className = 'btn-primary'; btnA.innerHTML = 'Aprovar'; btnA.onclick = () => changeDocEstado(i, 'aprovado');
+    const btnR = document.createElement('button'); btnR.className = 'btn-danger'; btnR.innerHTML = 'Rejeitar'; btnR.onclick = () => changeDocEstado(i, 'rejeitado');
+    footer.appendChild(btnR); footer.appendChild(btnA);
+  }
+  openModal('modal-doc');
+  if (d.estado === 'pendente') { docs[i].estado = 'em_analise'; db.set('fildocs_docs', docs); renderDocTable(); }
+}
+
+/* ══════════════════════════════════════════════
+   UPLOAD DIRECTOR
+══════════════════════════════════════════════ */
+function handleUpload(files) {
+  uploadedFiles = Array.from(files);
+  const container = document.getElementById('up-file-list');
+  container.style.display = uploadedFiles.length ? 'block' : 'none';
+  container.innerHTML = uploadedFiles.map((f, i) => `
+    <div class="file-item">
+      <div class="file-icon-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="file-info"><div class="file-name">${f.name}</div><div class="file-size">${formatSize(f.size)}</div></div>
+      <button class="btn-remove" onclick="removeUpFile(${i})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>`).join('');
+}
+function removeUpFile(i) { uploadedFiles.splice(i, 1); handleUpload(uploadedFiles); }
+function clearUpload() { uploadedFiles = []; document.getElementById('up-file-list').style.display = 'none'; document.getElementById('up-titulo').value = ''; document.getElementById('up-obs').value = ''; document.getElementById('up-file').value = ''; }
+
+function submitUpload() {
+  const titulo = document.getElementById('up-titulo').value.trim(); const dest = document.getElementById('up-dest').value; const cat = document.getElementById('up-cat').value; const obs = document.getElementById('up-obs').value;
+  if (!titulo) { toast('Insira um título para o documento', 'error'); return; }
+  if (!uploadedFiles.length) { toast('Seleccione pelo menos um ficheiro', 'error'); return; }
+  const docs = db.get('fildocs_docs');
+  uploadedFiles.forEach(f => {
+    docs.push({ nome: f.name, remetente: 'Director Geral', tipo: cat, estado: 'aprovado', data: new Date().toLocaleDateString('pt-AO'), tamanho: formatSize(f.size), obs: obs, origem: 'director', dest: dest });
+  });
+  db.set('fildocs_docs', docs);
+  const msg = `O Director publicou "${titulo}" — ${cat}.`;
+  if (dest === 'todos' || dest === 'professores') { const n = db.get('fildocs_notifs_professor'); n.push({ title: 'Novo documento publicado', body: msg, color: 'var(--color-primary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_professor', n); }
+  if (dest === 'todos' || dest === 'secretario') { const n = db.get('fildocs_notifs_secretario'); n.push({ title: 'Novo documento publicado', body: msg, color: 'var(--color-primary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_secretario', n); }
+  addLog('doc_published', `Documento "${titulo}" publicado pelo Director`);
+  toast(`${uploadedFiles.length} ficheiro(s) publicado(s) com sucesso!`, 'success'); clearUpload(); navTo('documentos');
+}
+
+/* ══════════════════════════════════════════════
+   PRAZOS
+══════════════════════════════════════════════ */
+function savePrazo() {
+  const tipo = document.getElementById('p-tipo').value; const abertura = document.getElementById('p-abertura').value; const limite = document.getElementById('p-limite').value; const alerta = document.getElementById('p-alerta').value;
+  if (!abertura || !limite) { toast('Preencha as datas de abertura e limite', 'error'); return; }
+  const prazos = db.get('fildocs_prazos'); prazos.push({ tipo, abertura, limite, alerta, aberto: true, id: Date.now() }); db.set('fildocs_prazos', prazos);
+  const n = db.get('fildocs_notifs_professor'); n.push({ title: 'Novo prazo definido', body: `Prazo para "${tipo}" até ${limite}. Não se atrase!`, color: '#854d0e', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_professor', n);
+  addLog('prazo_defined', `Prazo definido: ${tipo} até ${limite}`); closeModal('modal-prazo'); toast('Prazo definido e professores notificados!', 'success'); renderPrazos();
+}
+function togglePrazo(id) { const prazos = db.get('fildocs_prazos'); const p = prazos.find(x => x.id === id); if (p) { p.aberto = !p.aberto; db.set('fildocs_prazos', prazos); renderPrazos(); toast(`Período ${p.aberto ? 'aberto' : 'fechado'}!`, 'info'); } }
+function deletePrazo(id) { const prazos = db.get('fildocs_prazos').filter(x => x.id !== id); db.set('fildocs_prazos', prazos); renderPrazos(); toast('Prazo removido', 'info'); }
+function renderPrazos() {
+  const prazos = db.get('fildocs_prazos'); const el = document.getElementById('prazos-list');
+  if (!prazos.length) { el.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>Nenhum prazo definido ainda</p></div>'; return; }
+  el.innerHTML = prazos.map(p => `
+    <div class="prazo-card"><div class="prazo-status ${p.aberto ? 'prazo-open' : 'prazo-closed'}"></div><div class="prazo-info"><div class="prazo-name">${p.tipo}</div><div class="prazo-date">Abertura: ${p.abertura} • Limite: ${p.limite} • Alerta: ${p.alerta} dia(s) antes</div></div><div class="prazo-actions"><button class="btn-action ${p.aberto ? 'btn-reject' : 'btn-approve'}" onclick="togglePrazo(${p.id})">${p.aberto ? 'Fechar' : 'Abrir'}</button><button class="btn-action btn-archive" onclick="deletePrazo(${p.id})">Remover</button></div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   REUNIÕES
+══════════════════════════════════════════════ */
+function saveReuniao() {
+  const assunto = document.getElementById('r-assunto').value.trim(); const data = document.getElementById('r-data').value; const hora = document.getElementById('r-hora').value; const part = document.getElementById('r-participantes').value; const obs = document.getElementById('r-obs').value;
+  if (!assunto || !data || !hora) { toast('Preencha assunto, data e horário', 'error'); return; }
+  const reunioes = db.get('fildocs_reunioes'); reunioes.push({ assunto, data, hora, part, obs, id: Date.now() }); db.set('fildocs_reunioes', reunioes);
+  const msg = `Reunião: "${assunto}" em ${data} às ${hora}.`;
+  if (part === 'todos' || part === 'professores') { const n = db.get('fildocs_notifs_professor'); n.push({ title: 'Reunião agendada', body: msg, color: 'var(--color-tertiary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_professor', n); }
+  if (part === 'todos' || part === 'secretario') { const n = db.get('fildocs_notifs_secretario'); n.push({ title: 'Reunião agendada', body: msg, color: 'var(--color-tertiary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_secretario', n); }
+  addLog('meeting_created', `Reunião agendada: "${assunto}" em ${data}`); closeModal('modal-reuniao'); document.getElementById('r-assunto').value = ''; document.getElementById('r-data').value = ''; document.getElementById('r-hora').value = ''; document.getElementById('r-obs').value = ''; toast('Reunião criada e participantes notificados!', 'success'); renderReunioes(); renderDashboard();
+}
+function deleteReuniao(id) { const reunioes = db.get('fildocs_reunioes').filter(r => r.id !== id); db.set('fildocs_reunioes', reunioes); renderReunioes(); renderDashboard(); toast('Reunião removida', 'info'); }
+function renderReunioes() {
+  const reunioes = db.get('fildocs_reunioes'); const el = document.getElementById('reunioes-list');
+  if (!reunioes.length) { el.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Nenhuma reunião agendada</p></div>'; return; }
+  el.innerHTML = reunioes.slice().reverse().map(r => `
+    <div class="reuniao-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;"><div class="reuniao-title">${r.assunto}</div><button class="btn-remove" onclick="deleteReuniao(${r.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="reuniao-meta"><span class="reuniao-meta-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${r.data}</span><span class="reuniao-meta-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${r.hora}</span><span class="reuniao-meta-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${r.part === 'todos' ? 'Todos' : r.part === 'professores' ? 'Professores' : 'Secretário'}</span></div>${r.obs ? `<div style="margin-top:0.5rem;font-size:0.78rem;color:var(--color-outline);line-height:1.4;">${r.obs}</div>` : ''}</div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   IMPRIMIR CONVOCATÓRIA DE REUNIÃO (ABNT)
+══════════════════════════════════════════════ */
+function printMeetingConvocation(reuniao) {
+  const dataAtual = new Date().toLocaleString('pt-AO', { day: '2-digit', month: 'long', year: 'numeric' });
+  const preview = window.open('', '_blank', 'width=860,height=960');
+  preview.document.write(`<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><title>Convocatória de Reunião</title><style>${PREVIEW_STYLES}</style></head><body>
+    <div class="abnt-header"><div class="inst-name">Complexo Escolar São Filipe Sermão</div><div class="inst-sub">Sistema de Gestão Documental — FilDocs</div></div>
+    <div class="abnt-title">Convocatória de Reunião</div>
+    <div class="abnt-meta">
+      <div class="abnt-field"><span class="field-label">Assunto</span><span class="field-value">${reuniao.assunto}</span></div>
+      <div class="abnt-field"><span class="field-label">Data</span><span class="field-value">${reuniao.data}</span></div>
+      <div class="abnt-field"><span class="field-label">Horário</span><span class="field-value">${reuniao.hora}</span></div>
+      <div class="abnt-field"><span class="field-label">Participantes</span><span class="field-value">${reuniao.part === 'todos' ? 'Todos os Colaboradores' : reuniao.part === 'professores' ? 'Corpo Docente' : 'Secretaria'}</span></div>
+      <div class="abnt-field"><span class="field-label">Emitido por</span><span class="field-value">Director Geral</span></div>
+      <div class="abnt-field"><span class="field-label">Data de Emissão</span><span class="field-value">${dataAtual}</span></div>
+    </div>
+    ${reuniao.obs ? `<div class="abnt-body-box"><strong>Observações:</strong><br>${reuniao.obs}</div>` : ''}
+    <div class="abnt-signatures">
+      <div class="abnt-sig">________________________<br>Director Geral</div>
+      <div class="abnt-sig">________________________<br>Secretário Geral</div>
+      <div class="abnt-sig">________________________<br>Carimbo Institucional</div>
+    </div>
+    <div class="abnt-footer">Documento gerado automaticamente por FilDocs | ${dataAtual}</div>
+    <div class="preview-actions">
+      <button class="pv-btn pv-btn-outline" onclick="window.close()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Fechar</button>
+      <button class="pv-btn pv-btn-primary" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir</button>
+    </div>
+  </body></html>`);
+  preview.document.close();
+}
+
+/* ══════════════════════════════════════════════
+   COMUNICADOS
+══════════════════════════════════════════════ */
+function saveComunicado() {
+  const titulo = document.getElementById('c-titulo').value.trim(); const msg = document.getElementById('c-msg').value.trim(); const dest = document.getElementById('c-dest').value;
+  if (!titulo || !msg) { toast('Preencha o título e a mensagem', 'error'); return; }
+  const comunicados = db.get('fildocs_comunicados'); comunicados.push({ titulo, msg, dest, data: new Date().toLocaleDateString('pt-AO'), hora: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), id: Date.now() }); db.set('fildocs_comunicados', comunicados);
+  const body = `"${titulo}" — ${msg.substring(0, 60)}...`;
+  if (dest === 'todos' || dest === 'professores') { const n = db.get('fildocs_notifs_professor'); n.push({ title: 'Novo comunicado', body, color: 'var(--color-secondary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_professor', n); }
+  if (dest === 'todos' || dest === 'secretario') { const n = db.get('fildocs_notifs_secretario'); n.push({ title: 'Novo comunicado', body, color: 'var(--color-secondary)', time: new Date().toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' }), read: false }); db.set('fildocs_notifs_secretario', n); }
+  addLog('comunicado_published', `Comunicado publicado: "${titulo}"`); closeModal('modal-comunicado'); document.getElementById('c-titulo').value = ''; document.getElementById('c-msg').value = ''; toast('Comunicado publicado!', 'success'); renderComunicados();
+}
+function deleteComunicado(id) { const comunicados = db.get('fildocs_comunicados').filter(c => c.id !== id); db.set('fildocs_comunicados', comunicados); renderComunicados(); toast('Comunicado removido', 'info'); }
+function renderComunicados() {
+  const comunicados = db.get('fildocs_comunicados'); const el = document.getElementById('comunicados-list');
+  if (!comunicados.length) { el.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>Nenhum comunicado publicado ainda</p></div>'; return; }
+  el.innerHTML = comunicados.slice().reverse().map(c => `
+    <div class="comunicado-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;"><div class="comunicado-title">${c.titulo}</div><button class="btn-remove" onclick="deleteComunicado(${c.id})"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="comunicado-body">${c.msg}</div><div class="comunicado-footer"><span class="badge badge-secondary">${c.dest === 'todos' ? 'Todos' : c.dest === 'professores' ? 'Professores' : 'Secretário'}</span><span style="font-size:0.7rem;color:var(--color-outline);font-weight:600;">${c.data} • ${c.hora}</span></div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   IMPRIMIR COMUNICADO (ABNT)
+══════════════════════════════════════════════ */
+function printComunicado(comunicado) {
+  const dataAtual = new Date().toLocaleString('pt-AO', { day: '2-digit', month: 'long', year: 'numeric' });
+  const preview = window.open('', '_blank', 'width=860,height=960');
+  preview.document.write(`<!DOCTYPE html><html lang="pt-AO"><head><meta charset="UTF-8"><title>Comunicado Oficial</title><style>${PREVIEW_STYLES}</style></head><body>
+    <div class="abnt-header"><div class="inst-name">Complexo Escolar São Filipe Sermão</div><div class="inst-sub">Sistema de Gestão Documental — FilDocs</div></div>
+    <div class="abnt-title">Comunicado Oficial</div>
+    <div class="abnt-meta">
+      <div class="abnt-field"><span class="field-label">Título</span><span class="field-value">${comunicado.titulo}</span></div>
+      <div class="abnt-field"><span class="field-label">Destinatários</span><span class="field-value">${comunicado.dest === 'todos' ? 'Todos os Colaboradores' : comunicado.dest === 'professores' ? 'Corpo Docente' : 'Secretaria'}</span></div>
+      <div class="abnt-field"><span class="field-label">Data de Publicação</span><span class="field-value">${comunicado.data}</span></div>
+      <div class="abnt-field"><span class="field-label">Hora</span><span class="field-value">${comunicado.hora}</span></div>
+      <div class="abnt-field"><span class="field-label">Emitido por</span><span class="field-value">Director Geral</span></div>
+    </div>
+    <div class="abnt-body-box">${comunicado.msg}</div>
+    <div class="abnt-signatures">
+      <div class="abnt-sig">________________________<br>Director Geral</div>
+      <div class="abnt-sig">________________________<br>Secretário Geral</div>
+      <div class="abnt-sig">________________________<br>Carimbo Institucional</div>
+    </div>
+    <div class="abnt-footer">Documento gerado automaticamente por FilDocs | ${dataAtual}</div>
+    <div class="preview-actions">
+      <button class="pv-btn pv-btn-outline" onclick="window.close()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Fechar</button>
+      <button class="pv-btn pv-btn-primary" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir</button>
+    </div>
+  </body></html>`);
+  preview.document.close();
+}
+
+/* ══════════════════════════════════════════════
+   MONITORAMENTO
+══════════════════════════════════════════════ */
+function renderMonitoramento() {
+  const docs = db.get('fildocs_docs'); const profs = {};
+  docs.filter(d => d.origem !== 'director').forEach(d => {
+    if (!profs[d.remetente]) profs[d.remetente] = { total: 0, aprovados: 0 };
+    profs[d.remetente].total++; if (d.estado === 'aprovado') profs[d.remetente].aprovados++;
+  });
+  const prodEl = document.getElementById('prod-list'); const entries = Object.entries(profs);
+  if (!entries.length) { prodEl.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Sem dados ainda</p></div>'; }
+  else {
+    const max = Math.max(...entries.map(e => e[1].total));
+    prodEl.innerHTML = entries.map(([nome, data]) => {
+      const initials = nome.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(); const pct = max > 0 ? Math.round((data.total / max) * 100) : 0;
+      return `<div class="prof-row"><div class="prof-avatar">${initials}</div><div style="flex:1;min-width:0;"><div class="prof-name">${nome}</div><div class="prof-docs">${data.total} doc(s) • ${data.aprovados} aprovado(s)</div><div class="prof-bar-bg" style="margin-top:0.35rem;"><div class="prof-bar-fill" style="width:${pct}%"></div></div></div><div class="prof-pct">${pct}%</div></div>`;
+    }).join('');
+  }
+  const logs = db.get('fildocs_logs'); const logEl = document.getElementById('log-list');
+  if (!logs.length) { logEl.innerHTML = '<div class="empty-state"><p>Sem actividade registada</p></div>'; return; }
+  logEl.innerHTML = logs.slice().reverse().map(l => `
+    <div style="padding:0.65rem 0;border-bottom:1px solid var(--color-outline-variant);display:flex;gap:0.5rem;align-items:flex-start;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--color-primary);margin-top:6px;flex-shrink:0;"></div>
+      <div><div style="font-size:0.8rem;font-weight:600;">${l.action}</div><div style="font-size:0.68rem;color:var(--color-outline);margin-top:0.1rem;">${l.details}</div><div style="font-size:0.68rem;color:var(--color-outline);margin-top:0.1rem;">${new Date(l.timestamp).toLocaleTimeString('pt-AO')} • ${l.user}</div></div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════ */
+function renderDashboard() {
+  const docs = db.get('fildocs_docs'); const pendentes = docs.filter(d => d.estado === 'pendente').length;
+  const aprovados = docs.filter(d => d.estado === 'aprovado').length; const rejeitados = docs.filter(d => d.estado === 'rejeitado').length;
+  const profs = [...new Set(docs.filter(d => d.origem !== 'director').map(d => d.remetente))].length;
+  const atrasos = db.get('fildocs_prazos').filter(p => !p.aberto).length;
+  document.getElementById('stat-pendentes').textContent = pendentes; document.getElementById('stat-aprovados').textContent = aprovados;
+  document.getElementById('stat-rejeitados').textContent = rejeitados; document.getElementById('stat-profs').textContent = profs;
+  document.getElementById('stat-atrasos').textContent = atrasos; document.getElementById('stat-total').textContent = docs.length;
+  document.getElementById('badge-docs').textContent = pendentes || 0;
+  const actEl = document.getElementById('dash-activity'); const recent = docs.slice(-8).reverse();
+  if (!recent.length) { actEl.innerHTML = '<div class="empty-state"><p>Sem actividade ainda</p></div>'; }
+  else {
+    actEl.innerHTML = recent.map((d, i) => `
+      <div class="file-item" style="cursor:pointer;" onclick="navTo('documentos')">
+        <div class="file-icon-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="file-info"><div class="file-name">${d.nome}</div><div class="file-size">${d.remetente} • ${d.data}</div></div>${badgeHtml(d.estado)}
+      </div>`).join('');
+  }
+  const prazosEl = document.getElementById('dash-prazos'); const prazos = db.get('fildocs_prazos').filter(p => p.aberto).slice(0, 3);
+  if (!prazos.length) prazosEl.innerHTML = '<div style="font-size:0.8rem;color:var(--color-outline);padding:0.5rem 0;">Nenhum prazo activo</div>';
+  else prazosEl.innerHTML = prazos.map(p => `<div class="prazo-card" style="margin-bottom:0.5rem;"><div class="prazo-status prazo-open"></div><div class="prazo-info"><div class="prazo-name">${p.tipo}</div><div class="prazo-date">Limite: ${p.limite}</div></div></div>`).join('');
+  const reunioesEl = document.getElementById('dash-reunioes'); const reunioes = db.get('fildocs_reunioes').slice(-3).reverse();
+  if (!reunioes.length) reunioesEl.innerHTML = '<div style="font-size:0.8rem;color:var(--color-outline);padding:0.5rem 0;">Nenhuma reunião agendada</div>';
+  else reunioesEl.innerHTML = reunioes.map(r => `<div class="reuniao-card" style="margin-bottom:0.5rem;"><div class="reuniao-title" style="font-size:0.85rem;">${r.assunto}</div><div class="reuniao-meta"><span class="reuniao-meta-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${r.data} • ${r.hora}</span></div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   PERFIL
+══════════════════════════════════════════════ */
+function savePerfil() {
+  const s = db.getObj('fildocs_session'); s.name = document.getElementById('p-nome').value; s.user = document.getElementById('p-email').value;
+  db.set('fildocs_session', s); document.getElementById('sb-name').textContent = s.name;
+  addLog('profile_updated', 'Perfil do Director actualizado'); toast('Perfil actualizado!', 'success');
+}
+
+/* ══════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════ */
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+function setupDrop() {
+  const zone = document.getElementById('up-zone'); if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); handleUpload(e.dataTransfer.files); });
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(db.getObj('fildocs_theme') || (localStorage.getItem('fildocs_theme') || 'light'));
+  checkAuth();
+  if (localStorage.getItem('fildocs_sidebar') === '1') {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.getElementById('main-content').classList.add('expanded');
+  }
+  if (!db.get('fildocs_docs').length) {
+    db.set('fildocs_docs', [
+      { nome: 'Plano_Aula_Trim1.pdf', remetente: 'Prof. Amaro', tipo: 'Plano de Aula', estado: 'pendente', data: '10/01/2025', tamanho: '1.2 MB', origem: 'professor', obs: 'Plano trimestral referente ao 1º trimestre.' },
+      { nome: 'Justif_Falta_Dez.docx', remetente: 'Prof. Maria', tipo: 'Justificativo', estado: 'pendente', data: '02/01/2025', tamanho: '320 KB', origem: 'professor', obs: '' },
+      { nome: 'Pauta_2Trim.xlsx', remetente: 'Prof. Amaro', tipo: 'Pauta', estado: 'aprovado', data: '15/12/2024', tamanho: '540 KB', origem: 'professor', obs: '' },
+      { nome: 'Horario_Turmas.pdf', remetente: 'Secretário Geral', tipo: 'Organização Académica', estado: 'pendente', data: '08/01/2025', tamanho: '890 KB', origem: 'secretario', obs: 'Horário actualizado para o 2º trimestre.' },
+      { nome: 'Relatorio_Anual.pdf', remetente: 'Prof. João', tipo: 'Relatório', estado: 'rejeitado', data: '20/12/2024', tamanho: '2.1 MB', origem: 'professor', obs: 'Faltam dados do 3º trimestre.' },
+    ]);
+  }
+  renderDashboard(); setupDrop();
+});
+</script>
+</body>
+</html>

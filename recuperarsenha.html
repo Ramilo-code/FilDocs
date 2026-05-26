@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-AO" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FilDocs — Recuperar Senha</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: var(--color-background);
+    }
+
+    /* botão tema */
+    .btn-theme {
+      position: fixed;
+      top: 1.25rem; right: 1.25rem;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-outline-variant);
+      background: var(--color-surface-container-low);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      color: var(--color-on-surface-variant);
+      z-index: 100;
+    }
+    .btn-theme:hover { background: var(--color-surface-container); border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-theme svg { width: 18px; height: 18px; }
+
+    /* card central */
+    .recovery-card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--color-surface-container-lowest);
+      border: 1.5px solid var(--color-outline-variant);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    /* cabeçalho colorido */
+    .recovery-header {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-tertiary) 100%);
+      padding: 2rem 2rem 1.5rem;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .recovery-header::before {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      top: -60px; right: -40px;
+    }
+    .recovery-header-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .recovery-header-logo span {
+      font-size: 1.1rem; font-weight: 900; color: #fff;
+    }
+    .recovery-header-logo-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .recovery-header h2 {
+      font-size: 1.35rem; font-weight: 800;
+      margin-bottom: 0.3rem;
+    }
+    .recovery-header p {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.72);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* corpo */
+    .recovery-body { padding: 2rem; }
+
+    /* passos */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+    .step {
+      display: flex; flex-direction: column; align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .step-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--color-outline-variant);
+      background: var(--color-surface-container-low);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800;
+      color: var(--color-outline);
+      transition: all 0.3s;
+      z-index: 1;
+    }
+    .step-circle svg { width: 14px; height: 14px; display: none; }
+    .step-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--color-outline);
+      margin-top: 0.4rem;
+      text-align: center;
+    }
+    .step-line {
+      flex: 1; height: 2px;
+      background: var(--color-outline-variant);
+      margin-bottom: 1.4rem;
+      transition: background 0.3s;
+    }
+    .step.active .step-circle {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .step.active .step-label { color: var(--color-primary); }
+    .step.done .step-circle {
+      border-color: var(--color-secondary);
+      background: var(--color-secondary);
+      color: #fff;
+    }
+    .step.done .step-circle .step-num { display: none; }
+    .step.done .step-circle svg { display: block; stroke: #fff; }
+    .step.done .step-label { color: var(--color-secondary); }
+    .step-line.done { background: var(--color-secondary); }
+
+    /* painéis */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+    /* grupos */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--color-on-surface-variant);
+      margin-bottom: 0.45rem; padding-left: 0.25rem;
+    }
+    .input-wrapper { position: relative; }
+    .input-wrapper .input-field {
+      padding: 0.875rem 1rem 0.875rem 2.75rem;
+      font-size: 0.9rem;
+    }
+    .input-icon {
+      position: absolute;
+      left: 0.9rem; top: 50%; transform: translateY(-50%);
+      color: var(--color-outline); pointer-events: none;
+      display: flex; align-items: center;
+    }
+    .input-icon svg { width: 17px; height: 17px; }
+
+    /* código OTP */
+    .otp-wrapper {
+      display: flex; gap: 0.5rem; justify-content: center;
+      margin: 1rem 0;
+    }
+    .otp-input {
+      width: 52px; height: 58px;
+      border: 1.5px solid var(--color-outline-variant);
+      border-radius: 0.85rem;
+      background: var(--color-surface-container-low);
+      color: var(--color-on-surface);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.4rem; font-weight: 800;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .otp-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(13,115,119,0.15);
+    }
+    .otp-input.filled { border-color: var(--color-primary); background: var(--color-primary-container); }
+
+    /* info box */
+    .info-box {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      border-radius: 0.85rem;
+      background: var(--color-primary-container);
+      margin-bottom: 1.25rem;
+    }
+    .info-box svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--color-primary); }
+    .info-box p { font-size: 0.8rem; font-weight: 600; color: var(--color-on-primary-container); line-height: 1.5; }
+
+    /* erro inline */
+    .error-msg {
+      display: none; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1rem; border-radius: 0.85rem;
+      background: var(--color-error-container);
+      color: var(--color-on-error-container);
+      font-size: 0.82rem; font-weight: 600;
+      margin-bottom: 1rem;
+      animation: fadeIn 0.25s ease;
+    }
+    .error-msg.show { display: flex; }
+    .error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* sucesso */
+    .success-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--color-secondary-container);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .success-icon svg { width: 36px; height: 36px; color: var(--color-secondary); }
+
+    /* botão principal */
+    .btn-submit {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-submit svg { width: 17px; height: 17px; }
+
+    /* link voltar */
+    .btn-back-link {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: none; border: none; cursor: pointer;
+      color: var(--color-on-surface-variant);
+      font-size: 0.8rem; font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: color 0.2s;
+      padding: 0;
+    }
+    .btn-back-link:hover { color: var(--color-primary); }
+    .btn-back-link svg { width: 15px; height: 15px; }
+
+    /* reenviar código */
+    .resend-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.4rem; margin-top: 1rem;
+    }
+    .resend-row span { font-size: 0.8rem; color: var(--color-outline); font-weight: 500; }
+    .btn-resend {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--color-primary);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 0; transition: opacity 0.2s;
+    }
+    .btn-resend:hover { opacity: 0.7; text-decoration: underline; }
+    .btn-resend:disabled { color: var(--color-outline); cursor: default; opacity: 1; text-decoration: none; }
+
+    /* senha strength */
+    .strength-bar {
+      display: flex; gap: 4px; margin-top: 0.5rem;
+    }
+    .strength-seg {
+      flex: 1; height: 4px; border-radius: 999px;
+      background: var(--color-outline-variant);
+      transition: background 0.3s;
+    }
+    .strength-label {
+      font-size: 0.7rem; font-weight: 700;
+      margin-top: 0.3rem;
+      color: var(--color-outline);
+      padding-left: 0.25rem;
+      transition: color 0.3s;
+    }
+
+    /* mostrar senha */
+    .btn-eye {
+      position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--color-outline);
+      display: flex; align-items: center; padding: 0.2rem;
+      transition: color 0.2s;
+    }
+    .btn-eye:hover { color: var(--color-primary); }
+    .btn-eye svg { width: 17px; height: 17px; }
+
+    /* rodapé */
+    .recovery-footer {
+      border-top: 1px solid var(--color-outline-variant);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* countdown */
+    #countdown { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+
+<button class="btn-theme" onclick="toggleTheme()" title="Alternar tema">
+  <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+
+<div class="recovery-card">
+
+  <!-- CABEÇALHO -->
+  <div class="recovery-header">
+    <div class="recovery-header-logo">
+      <div class="recovery-header-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span>FilDocs</span>
+    </div>
+    <h2>Recuperar Palavra-passe</h2>
+    <p>Siga os passos para redefinir o acesso à sua conta</p>
+  </div>
+
+  <!-- CORPO -->
+  <div class="recovery-body">
+
+    <!-- INDICADOR DE PASSOS -->
+    <div class="steps" id="steps-indicator">
+      <div class="step active" id="step-1">
+        <div class="step-circle"><span class="step-num">1</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="step-label">E-mail</span>
+      </div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step" id="step-2">
+        <div class="step-circle"><span class="step-num">2</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="step-label">Código</span>
+      </div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step" id="step-3">
+        <div class="step-circle"><span class="step-num">3</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="step-label">Nova Senha</span>
+      </div>
+    </div>
+
+    <!-- PAINEL 1: E-MAIL -->
+    <div class="panel active" id="panel-1">
+      <div class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Insira o seu e-mail institucional. Enviaremos um código de verificação de 6 dígitos.</p>
+      </div>
+      <div class="error-msg" id="err-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="err-1-text">E-mail não encontrado no sistema.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="rec-email">E-mail Institucional</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </span>
+          <input id="rec-email" type="email" class="input-field" placeholder="utilizador@sfsermao.ao" autocomplete="email">
+        </div>
+      </div>
+      <button class="btn-primary btn-submit" onclick="sendCode()">
+        <span id="send-btn-text">Enviar Código</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="send-btn-icon"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+
+    <!-- PAINEL 2: CÓDIGO OTP -->
+    <div class="panel" id="panel-2">
+      <div class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <p>Código enviado para <strong id="email-display"></strong>. Válido por <span id="countdown">02:00</span>.</p>
+      </div>
+      <div class="error-msg" id="err-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Código inválido ou expirado. Tente novamente.</span>
+      </div>
+      <div class="otp-wrapper">
+        <input type="text" class="otp-input" maxlength="1" id="otp-0" oninput="otpMove(this,0)">
+        <input type="text" class="otp-input" maxlength="1" id="otp-1" oninput="otpMove(this,1)">
+        <input type="text" class="otp-input" maxlength="1" id="otp-2" oninput="otpMove(this,2)">
+        <input type="text" class="otp-input" maxlength="1" id="otp-3" oninput="otpMove(this,3)">
+        <input type="text" class="otp-input" maxlength="1" id="otp-4" oninput="otpMove(this,4)">
+        <input type="text" class="otp-input" maxlength="1" id="otp-5" oninput="otpMove(this,5)">
+      </div>
+      <button class="btn-primary btn-submit" onclick="verifyCode()">
+        <span id="verify-btn-text">Verificar Código</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="verify-btn-icon"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <div class="resend-row">
+        <span>Não recebeu o código?</span>
+        <button class="btn-resend" id="btn-resend" onclick="resendCode()">Reenviar</button>
+      </div>
+    </div>
+
+    <!-- PAINEL 3: NOVA SENHA -->
+    <div class="panel" id="panel-3">
+      <div class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p>Crie uma nova palavra-passe segura. Use letras maiúsculas, minúsculas, números e símbolos.</p>
+      </div>
+      <div class="error-msg" id="err-3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="err-3-text">As senhas não coincidem.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nova Palavra-passe</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input id="new-pass" type="password" class="input-field" placeholder="••••••••" oninput="checkStrength(this.value)">
+          <button type="button" class="btn-eye" onclick="toggleNewPass('new-pass','eye-new')">
+            <svg id="eye-new" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-seg" id="seg-1"></div>
+          <div class="strength-seg" id="seg-2"></div>
+          <div class="strength-seg" id="seg-3"></div>
+          <div class="strength-seg" id="seg-4"></div>
+        </div>
+        <p class="strength-label" id="strength-label">Insira uma senha</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar Palavra-passe</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input id="conf-pass" type="password" class="input-field" placeholder="••••••••">
+          <button type="button" class="btn-eye" onclick="toggleNewPass('conf-pass','eye-conf')">
+            <svg id="eye-conf" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-primary btn-submit" onclick="savePassword()">
+        <span id="save-btn-text">Guardar Nova Senha</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
+    </div>
+
+    <!-- PAINEL 4: SUCESSO -->
+    <div class="panel" id="panel-4">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:0.4rem;">Senha actualizada!</h3>
+        <p style="font-size:0.85rem;color:var(--color-on-surface-variant);line-height:1.6;">A sua palavra-passe foi redefinida com sucesso. Já pode aceder ao sistema com as novas credenciais.</p>
+      </div>
+      <a href="login.html" class="btn-primary btn-submit" style="text-decoration:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Voltar ao Login
+      </a>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ -->
+  <div class="recovery-footer" id="recovery-footer">
+    <button class="btn-back-link" onclick="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span id="back-label">Voltar ao Login</span>
+    </button>
+    <span style="font-size:0.68rem;color:var(--color-outline);">v1.0.0</span>
+  </div>
+
+</div>
+
+<script>
+  // ── ESTADO ──
+  let currentStep = 1;
+  let generatedCode = '';
+  let userEmail = '';
+  let countdownTimer = null;
+
+  // ── TEMA ──
+  const db = {
+    get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  };
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    db.set('fildocs_theme', t);
+    document.getElementById('icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+    document.getElementById('icon-moon').style.display = t === 'dark' ? 'none' : 'block';
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  }
+
+  // ── UTILIZADORES DEMO (mesmos do login) ──
+  const USERS_EMAILS = [
+    'director@sfsermao.ao', 'secretario@sfsermao.ao',
+    'prof.amaro@sfsermao.ao', 'admin@sfsermao.ao'
+  ];
+
+  // ── NAVEGAR ENTRE PAINÉIS ──
+  function goToStep(n) {
+    // painéis
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`panel-${i}`).classList.toggle('active', i === n);
+    }
+    // steps visuais
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById(`step-${i}`);
+      s.classList.remove('active', 'done');
+      if (i < n) s.classList.add('done');
+      else if (i === n) s.classList.add('active');
+    }
+    // linhas
+    for (let i = 1; i <= 2; i++) {
+      const l = document.getElementById(`line-${i}`);
+      l.classList.toggle('done', i < n);
+    }
+    // botão voltar
+    const backLabel = document.getElementById('back-label');
+    const footer = document.getElementById('recovery-footer');
+    if (n === 4) {
+      footer.style.display = 'none';
+    } else {
+      footer.style.display = 'flex';
+      backLabel.textContent = n === 1 ? 'Voltar ao Login' : 'Passo anterior';
+    }
+    currentStep = n;
+  }
+
+  function goBack() {
+    if (currentStep === 1) window.location.href = 'login.html';
+    else goToStep(currentStep - 1);
+  }
+
+  // ── MOSTRAR ERRO ──
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    if (msg) { const t = el.querySelector('span'); if (t) t.textContent = msg; }
+    el.classList.add('show');
+  }
+  function hideErr(id) { document.getElementById(id).classList.remove('show'); }
+
+  // ── LOADING BUTTON ──
+  function setLoading(btnTextId, btnIconId, loading) {
+    const t = document.getElementById(btnTextId);
+    const ic = document.getElementById(btnIconId);
+    if (loading) {
+      ic.style.display = 'none';
+      t.innerHTML = '<span class="loading-spinner"></span> Por favor aguarde...';
+    } else {
+      ic.style.display = 'block';
+    }
+  }
+
+  // ── PASSO 1: ENVIAR CÓDIGO ──
+  function sendCode() {
+    hideErr('err-1');
+    const email = document.getElementById('rec-email').value.trim();
+    if (!email) { showErr('err-1', 'Por favor, insira o seu e-mail.'); return; }
+    if (!USERS_EMAILS.includes(email)) {
+      showErr('err-1', 'E-mail não encontrado no sistema. Verifique e tente novamente.');
+      return;
+    }
+    setLoading('send-btn-text', 'send-btn-icon', true);
+    setTimeout(() => {
+      // gera código demo (6 dígitos)
+      generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+      userEmail = email;
+      console.log(`[FilDocs Demo] Código de verificação: ${generatedCode}`); // visível no console
+      document.getElementById('email-display').textContent = email;
+      setLoading('send-btn-text', 'send-btn-icon', false);
+      document.getElementById('send-btn-text').textContent = 'Enviar Código';
+      startCountdown();
+      goToStep(2);
+      setTimeout(() => document.getElementById('otp-0').focus(), 100);
+    }, 1400);
+  }
+
+  // ── COUNTDOWN ──
+  function startCountdown() {
+    clearInterval(countdownTimer);
+    let secs = 120;
+    const el = document.getElementById('countdown');
+    const resend = document.getElementById('btn-resend');
+    resend.disabled = true;
+
+    countdownTimer = setInterval(() => {
+      secs--;
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      el.textContent = `${m}:${s}`;
+      if (secs <= 0) {
+        clearInterval(countdownTimer);
+        el.textContent = '00:00';
+        resend.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function resendCode() {
+    generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`[FilDocs Demo] Novo código: ${generatedCode}`);
+    for (let i = 0; i < 6; i++) {
+      const inp = document.getElementById(`otp-${i}`);
+      inp.value = ''; inp.classList.remove('filled');
+    }
+    hideErr('err-2');
+    startCountdown();
+    document.getElementById('otp-0').focus();
+  }
+
+  // ── OTP INPUT ──
+  function otpMove(el, idx) {
+    el.value = el.value.replace(/[^0-9]/g, '');
+    el.classList.toggle('filled', el.value !== '');
+    if (el.value && idx < 5) document.getElementById(`otp-${idx + 1}`).focus();
+    // auto-verificar quando todos preenchidos
+    const all = [...Array(6)].map((_, i) => document.getElementById(`otp-${i}`).value);
+    if (all.every(v => v)) verifyCode();
+  }
+
+  // teclado no OTP
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace') {
+      const focused = document.querySelector('.otp-input:focus');
+      if (focused) {
+        const idx = parseInt(focused.id.split('-')[1]);
+        if (!focused.value && idx > 0) {
+          const prev = document.getElementById(`otp-${idx - 1}`);
+          prev.value = ''; prev.classList.remove('filled'); prev.focus();
+        }
+      }
+    }
+  });
+
+  // ── PASSO 2: VERIFICAR CÓDIGO ──
+  function verifyCode() {
+    hideErr('err-2');
+    const entered = [...Array(6)].map((_, i) => document.getElementById(`otp-${i}`).value).join('');
+    if (entered.length < 6) { showErr('err-2', 'Por favor, insira os 6 dígitos do código.'); return; }
+
+    setLoading('verify-btn-text', 'verify-btn-icon', true);
+    setTimeout(() => {
+      if (entered === generatedCode) {
+        clearInterval(countdownTimer);
+        setLoading('verify-btn-text', 'verify-btn-icon', false);
+        document.getElementById('verify-btn-text').textContent = 'Verificar Código';
+        goToStep(3);
+        setTimeout(() => document.getElementById('new-pass').focus(), 100);
+      } else {
+        setLoading('verify-btn-text', 'verify-btn-icon', false);
+        document.getElementById('verify-btn-text').textContent = 'Verificar Código';
+        showErr('err-2', 'Código inválido. Verifique e tente novamente.');
+        // vibrar inputs
+        document.querySelectorAll('.otp-input').forEach(i => {
+          i.style.borderColor = 'var(--color-error)';
+          setTimeout(() => { i.style.borderColor = ''; }, 1000);
+        });
+      }
+    }, 1000);
+  }
+
+  // ── FORÇA DA SENHA ──
+  function checkStrength(val) {
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+    const labels = ['Insira uma senha', 'Muito fraca', 'Fraca', 'Média', 'Forte'];
+    const labelColors = ['var(--color-outline)', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+
+    for (let i = 1; i <= 4; i++) {
+      const seg = document.getElementById(`seg-${i}`);
+      seg.style.background = i <= score ? colors[score] : 'var(--color-outline-variant)';
+    }
+    const lbl = document.getElementById('strength-label');
+    lbl.textContent = val ? labels[score] : labels[0];
+    lbl.style.color = val ? labelColors[score] : labelColors[0];
+  }
+
+  // ── MOSTRAR/OCULTAR NOVA SENHA ──
+  function toggleNewPass(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const ico = document.getElementById(iconId);
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      ico.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+    } else {
+      inp.type = 'password';
+      ico.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    }
+  }
+
+  // ── PASSO 3: GUARDAR SENHA ──
+  function savePassword() {
+    hideErr('err-3');
+    const np = document.getElementById('new-pass').value;
+    const cp = document.getElementById('conf-pass').value;
+    if (!np || !cp) { showErr('err-3', 'Por favor, preencha ambos os campos.'); return; }
+    if (np.length < 8) { showErr('err-3', 'A senha deve ter pelo menos 8 caracteres.'); return; }
+    if (np !== cp) { showErr('err-3', 'As senhas não coincidem. Verifique e tente novamente.'); return; }
+
+    setLoading('save-btn-text', null, true);
+    document.querySelector('#panel-3 .btn-submit svg').style.display = 'none';
+
+    setTimeout(() => {
+      // em produção: actualizar no backend; aqui actualiza no localStorage demo
+      const session = db.get('fildocs_session');
+      if (session) { session.passwordChanged = true; db.set('fildocs_session', session); }
+      goToStep(4);
+    }, 1200);
+  }
+
+  // ── INIT ──
+  document.addEventListener('DOMContentLoaded', () => {
+    applyTheme(db.get('fildocs_theme') || 'light');
+    goToStep(1);
+  });
+</script>
+</body>
+</html>
